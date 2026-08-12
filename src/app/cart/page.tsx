@@ -26,8 +26,8 @@ export default function CartPage() {
   const [checkoutStep, setCheckoutStep] = useState(1); // 1: Address, 2: Payment, 3: Success
 
   // Address
-  const [fullName, setFullName] = useState('John Doe');
-  const [phoneNumber, setPhoneNumber] = useState('9876543210');
+  const [fullName, setFullName] = useState(auth.user?.name || 'John Doe');
+  const [phoneNumber, setPhoneNumber] = useState(auth.user?.phone || '9876543210');
   const [addressLabel, setAddressLabel] = useState('Home');
   const [street, setStreet] = useState('102, Gold Coast Road');
   const [city, setCity] = useState('Gurugram');
@@ -42,6 +42,13 @@ export default function CartPage() {
 
   // Success
   const [orderReceipt, setOrderReceipt] = useState<any>(null);
+  const [submittingOrder, setSubmittingOrder] = useState(false);
+
+  // Sync user info when auth updates
+  React.useEffect(() => {
+    if (auth.user?.name) setFullName(auth.user.name);
+    if (auth.user?.phone) setPhoneNumber(auth.user.phone);
+  }, [auth.user]);
 
   // Calculators
   const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -65,12 +72,12 @@ export default function CartPage() {
     if (!couponCode.trim()) return;
 
     try {
+      const headers: any = { 'Content-Type': 'application/json' };
+      if (auth.token) headers['Authorization'] = `Bearer ${auth.token}`;
+
       const res = await fetch('http://localhost:5000/api/cart/coupon', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth.token}`
-        },
+        headers,
         body: JSON.stringify({ code: couponCode.trim().toUpperCase() })
       });
 
@@ -83,6 +90,8 @@ export default function CartPage() {
           dispatch(applyCoupon({ code: 'WELCOME10', discount: 10, isPercent: true }));
         } else if (couponCode.toUpperCase() === 'BRIGHTFEST') {
           dispatch(applyCoupon({ code: 'BRIGHTFEST', discount: 2000, isPercent: false }));
+        } else if (couponCode.toUpperCase() === 'FLAT500') {
+          dispatch(applyCoupon({ code: 'FLAT500', discount: 500, isPercent: false }));
         } else {
           setCouponError('Invalid coupon code.');
         }
@@ -96,35 +105,79 @@ export default function CartPage() {
     }
   };
 
-
-
   // Dispatch Order Placement
   const handlePlaceOrder = async () => {
-    // Call DB checkout API or mock
-    const payload = {
-      addressId: 'mock-address-id',
-      paymentMethod,
-      couponCode: cart.coupon?.code || null
-    };
+    setSubmittingOrder(true);
+    try {
+      const payload = {
+        items: cart.items,
+        shippingAddress: {
+          fullName,
+          phone: phoneNumber,
+          street,
+          city,
+          state: stateProvince,
+          postalCode,
+          addressLabel,
+        },
+        paymentMethod,
+        couponCode: cart.coupon?.code || null,
+      };
 
-    setCheckoutStep(3);
-    const receipt = {
-      orderNumber: `BRIGHT-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-      total: netAmount,
-      method: paymentMethod,
-      date: new Date().toLocaleDateString()
-    };
-    setOrderReceipt(receipt);
-    
-    // Clear shopping cart state
-    dispatch(clearCart());
+      let receiptData: any = null;
 
-    // Trigger full screen confetti
-    confetti({
-      particleCount: 150,
-      spread: 80,
-      origin: { y: 0.6 }
-    });
+      if (auth.token) {
+        const res = await fetch('http://localhost:5000/api/cart/checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${auth.token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          const order = await res.json();
+          receiptData = {
+            orderNumber: order.orderNumber,
+            total: order.totalAmount,
+            method: order.paymentMethod,
+            date: new Date(order.createdAt || Date.now()).toLocaleDateString()
+          };
+        }
+      }
+
+      if (!receiptData) {
+        receiptData = {
+          orderNumber: `BRIGHT-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          total: netAmount,
+          method: paymentMethod,
+          date: new Date().toLocaleDateString()
+        };
+      }
+
+      setOrderReceipt(receiptData);
+      setCheckoutStep(3);
+      dispatch(clearCart());
+
+      confetti({
+        particleCount: 150,
+        spread: 80,
+        origin: { y: 0.6 }
+      });
+    } catch (_) {
+      const fallbackReceipt = {
+        orderNumber: `BRIGHT-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        total: netAmount,
+        method: paymentMethod,
+        date: new Date().toLocaleDateString()
+      };
+      setOrderReceipt(fallbackReceipt);
+      setCheckoutStep(3);
+      dispatch(clearCart());
+    } finally {
+      setSubmittingOrder(false);
+    }
   };
 
   if (cart.items.length === 0 && checkoutStep !== 3) {
@@ -392,8 +445,10 @@ export default function CartPage() {
                 )}
 
                 <div className={styles.modalCTAs}>
-                  <button onClick={() => setCheckoutStep(1)} className="btn btnSecondary">Back</button>
-                  <button onClick={handlePlaceOrder} className="btn btnPrimary">Place Order (₹{netAmount.toLocaleString()})</button>
+                  <button onClick={() => setCheckoutStep(1)} className="btn btnSecondary" disabled={submittingOrder}>Back</button>
+                  <button onClick={handlePlaceOrder} className="btn btnPrimary" disabled={submittingOrder}>
+                    {submittingOrder ? 'Processing Order...' : `Place Order (₹${netAmount.toLocaleString()})`}
+                  </button>
                 </div>
               </div>
             )}

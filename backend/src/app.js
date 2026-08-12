@@ -9,6 +9,7 @@ const accessoryRoutes = require('./routes/accessoryRoutes');
 const productRoutes = require('./routes/productRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const bannerRoutes = require('./routes/bannerRoutes');
+const cartRoutes = require('./routes/cartRoutes');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -41,6 +42,7 @@ app.use('/api/accessories', accessoryRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/banner', bannerRoutes);
+app.use('/api/cart', cartRoutes);
 
 // 404 + error handling (must be last)
 app.use(notFound);

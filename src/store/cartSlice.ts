@@ -80,6 +80,11 @@ const cartSlice = createSlice({
       state.coupon = null;
       saveCartToStorage([]);
     },
+    setCartItems(state, action: PayloadAction<CartItem[]>) {
+      state.items = action.payload;
+      state.shipping = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0) > 5000 ? 0 : 150;
+      saveCartToStorage(state.items);
+    },
     rehydrate(state) {
       if (typeof window !== 'undefined') {
         const saved = localStorage.getItem('bright_cart');
@@ -94,5 +99,5 @@ const cartSlice = createSlice({
   },
 });
 
-export const { addToCart, updateQuantity, removeFromCart, applyCoupon, clearCart, rehydrate } = cartSlice.actions;
+export const { addToCart, updateQuantity, removeFromCart, applyCoupon, clearCart, setCartItems, rehydrate } = cartSlice.actions;
 export default cartSlice.reducer;
