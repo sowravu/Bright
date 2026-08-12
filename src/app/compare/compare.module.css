@@ -1,0 +1,282 @@
+.comparePage {
+  padding: 60px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.headerRow h1 {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.headerRow p {
+  color: var(--foreground-secondary);
+  font-size: 15px;
+  margin-top: 4px;
+}
+
+.clearAllBtn {
+  background: none;
+  border: 1px solid var(--border-color);
+  padding: 10px 20px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.clearAllBtn:hover {
+  background: var(--error);
+  color: #FFFFFF;
+  border-color: var(--error);
+}
+
+/* Empty State */
+.emptyCompare {
+  padding: 120px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.emptyIcon {
+  color: var(--foreground-secondary);
+}
+
+.emptyCompare h2 {
+  font-size: 28px;
+}
+
+.emptyCompare p {
+  color: var(--foreground-secondary);
+  max-width: 500px;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+/* Compare Matrix Grid */
+.compareGrid {
+  display: grid;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--card-shadow);
+  border-radius: var(--radius-lg);
+  overflow-x: auto;
+}
+
+.rowHeaderCol {
+  border-right: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.productCol {
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.productCol:last-child {
+  border-right: none;
+}
+
+/* Cells */
+.gridCellHeader {
+  height: 220px;
+  padding: 24px;
+  display: flex;
+  align-items: flex-end;
+  font-weight: 700;
+  font-size: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.gridCellHeaderCard {
+  height: 220px;
+  padding: 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.removeBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--foreground-secondary);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.removeBtn:hover {
+  color: var(--error);
+}
+
+.gridCellHeaderCard img {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  background: #FFFFFF;
+  border-radius: var(--radius-sm);
+  padding: 4px;
+}
+
+.gridCellHeaderCard h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.gridCell {
+  min-height: 80px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: var(--foreground);
+}
+
+.priceText {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.gridCellActions {
+  min-height: 90px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gridCellActions button {
+  width: 100%;
+}
+
+/* Awards Badges */
+.awardsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.awardBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.batteryAward {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+
+.cpuAward {
+  background: rgba(0, 87, 255, 0.1);
+  color: var(--primary);
+}
+
+.displayAward {
+  background: rgba(0, 217, 255, 0.1);
+  color: var(--accent);
+}
+
+.valueAward {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+}
+
+.noAward {
+  font-size: 12px;
+  color: var(--foreground-secondary);
+}
+
+/* Performance Charts */
+.chartsSection {
+  border-radius: var(--radius-lg);
+  padding: 40px;
+}
+
+.chartsHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.sparkleIcon {
+  color: var(--accent);
+}
+
+.chartsSub {
+  font-size: 14px;
+  color: var(--foreground-secondary);
+  margin-bottom: 32px;
+}
+
+.chartBarsList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.chartBarRow {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  align-items: center;
+  gap: 20px;
+}
+
+.barLabel {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.barContainer {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-full);
+  height: 32px;
+  overflow: hidden;
+}
+
+.barFill {
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  height: 100%;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  padding-left: 16px;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 700;
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}

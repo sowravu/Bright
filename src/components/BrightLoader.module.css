@@ -1,0 +1,170 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background);
+  animation: fadeIn 0.25s ease;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  animation: floatUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.logoRing {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.logoPulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 87, 255, 0.25) 0%, rgba(0, 87, 255, 0) 70%);
+  animation: pulseRing 1.6s ease-out infinite;
+}
+
+.logoRing::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid var(--border-color);
+}
+
+.logoRing::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: var(--primary);
+  border-right-color: var(--accent);
+  animation: spin 0.9s linear infinite;
+}
+
+.logoIcon {
+  color: var(--primary);
+  position: relative;
+  z-index: 1;
+  animation: sparklePulse 1.6s ease-in-out infinite;
+}
+
+.wordmark {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.tagline {
+  font-size: 13px;
+  color: var(--foreground-secondary);
+  margin-bottom: 18px;
+}
+
+.dotsRow {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.dotsRow span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: dotBounce 1s ease-in-out infinite;
+}
+
+.dotsRow span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.dotsRow span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.message {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--foreground-secondary);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes sparklePulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.85;
+  }
+}
+
+@keyframes dotBounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes floatUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,0 +1,493 @@
+.cartPage {
+  padding: 60px 24px;
+}
+
+.cartPage h1 {
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: 32px;
+  letter-spacing: -0.03em;
+}
+
+.layoutGrid {
+  display: grid;
+  grid-template-columns: 1.8fr 1.2fr;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+/* Empty State */
+.emptyCart {
+  padding: 120px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.emptyIcon {
+  color: var(--foreground-secondary);
+}
+
+.emptyCart h2 {
+  font-size: 28px;
+}
+
+.emptyCart p {
+  color: var(--foreground-secondary);
+  max-width: 500px;
+  line-height: 1.6;
+}
+
+/* Items List */
+.itemsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.itemCard {
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.itemCard img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  background: #FFFFFF;
+  border-radius: var(--radius-sm);
+  padding: 4px;
+}
+
+.itemMeta {
+  flex: 1;
+}
+
+.itemMeta h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.itemMeta p {
+  font-size: 13px;
+  color: var(--foreground-secondary);
+  margin-top: 4px;
+}
+
+.itemPrice {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+  display: block;
+  margin-top: 6px;
+}
+
+/* Quantity controls */
+.quantityControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+.qtyBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--foreground-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qtyBtn:hover {
+  color: var(--foreground);
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: var(--foreground-secondary);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.deleteBtn:hover {
+  color: var(--error);
+}
+
+/* Summary Col */
+.summaryCol {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.couponCard {
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardHeader h3 {
+  font-size: 15px;
+}
+
+.couponForm {
+  display: flex;
+  gap: 8px;
+}
+
+.couponForm input {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.couponForm button {
+  background: var(--secondary);
+  color: #FFFFFF;
+  border: none;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.couponSuccess {
+  font-size: 12px;
+  color: var(--success);
+}
+
+.couponError {
+  font-size: 12px;
+  color: var(--error);
+}
+
+.summaryCard {
+  border-radius: var(--radius-md);
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.summaryCard h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.discountRow {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 8px 0;
+}
+
+.netRow {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+/* Success Screen */
+.successScreen {
+  text-align: center;
+  padding: 60px 40px;
+  border-radius: var(--radius-lg);
+  max-width: 600px;
+  margin: 40px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.successIcon {
+  color: var(--success);
+}
+
+.receiptCard {
+  background: var(--background);
+  border: 1px solid var(--border-color);
+  padding: 24px;
+  border-radius: var(--radius-md);
+  text-align: left;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.receiptCard h3 {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.receiptRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.deliveryReceiptText {
+  font-size: 12px;
+  color: var(--foreground-secondary);
+  line-height: 1.5;
+}
+
+.receiptActions {
+  display: flex;
+  gap: 16px;
+}
+
+/* Modal Overlay & Content */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.modalContent {
+  width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalClose {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: var(--foreground-secondary);
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.inputGroup label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--foreground-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.inputGroup input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--foreground);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.inputGroup input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--background);
+  box-shadow: 0 0 0 3px rgba(0, 87, 255, 0.15);
+}
+
+.stepperContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.stepIndicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  z-index: 2;
+}
+
+.stepNum {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  color: var(--foreground-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.stepText {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--foreground-secondary);
+  transition: all 0.3s ease;
+}
+
+.stepActive .stepNum {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #FFFFFF;
+  box-shadow: 0 0 12px rgba(0, 87, 255, 0.3);
+}
+
+.stepActive .stepText {
+  color: var(--primary);
+}
+
+.stepConnector {
+  flex: 1;
+  height: 3px;
+  background: var(--border-color);
+  margin: 0 16px;
+  margin-top: -20px;
+  transition: all 0.3s ease;
+}
+
+.connectorActive {
+  background: var(--primary);
+}
+
+.formRowGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.stepBox {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stepBox h3 {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.paymentsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.paymentLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--bg-secondary);
+  transition: all 0.2s ease;
+}
+
+.paymentLabel:hover {
+  border-color: var(--primary);
+}
+
+.activePayment {
+  border-color: var(--primary);
+  background: rgba(0, 87, 255, 0.05);
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+.cardFields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cardFields input {
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  font-size: 13px;
+}
+
+.modalCTAs {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.modalCTAs button {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .layoutGrid {
+    grid-template-columns: 1fr;
+  }
+  .modalContent {
+    width: 90%;
+  }
+  .paymentsGrid {
+    grid-template-columns: 1fr;
+  }
+}

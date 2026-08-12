@@ -1,0 +1,277 @@
+.productsPage {
+  padding: 40px 24px;
+}
+
+.pageHeader {
+  margin-bottom: 32px;
+}
+
+.pageHeader h1 {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.pageHeader p {
+  color: var(--foreground-secondary);
+  font-size: 15px;
+  margin-top: 4px;
+}
+
+.layoutGrid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+/* Sidebar Filters */
+.sidebar {
+  border-radius: var(--radius-md);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  position: sticky;
+  top: 100px;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+}
+
+.filterTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 16px;
+}
+
+.filterTitle h2 {
+  font-size: 18px;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filterGroup h3 {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--foreground-secondary);
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checkLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rangeInput {
+  width: 100%;
+  accent-color: var(--primary);
+}
+
+.selectFilter {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  font-size: 14px;
+}
+
+.clearBtn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  text-align: left;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+/* Toolbar */
+.toolbar {
+  border-radius: var(--radius-sm);
+  padding: 12px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.toolbarInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.toolbarInfo select {
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+}
+
+/* Products Grid */
+.productsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.productCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.productImg {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: #FFFFFF;
+  margin-bottom: 16px;
+}
+
+.brandBadge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 6px;
+}
+
+.name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 6px;
+}
+
+.briefSpecs {
+  font-size: 13px;
+  color: var(--foreground-secondary);
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: auto;
+  border-top: 1px solid var(--border-color);
+  padding-top: 16px;
+}
+
+.priceCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.price {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.oldPrice {
+  font-size: 13px;
+  color: var(--foreground-secondary);
+  text-decoration: line-through;
+}
+
+.cartIconBtn {
+  background: var(--secondary);
+  color: #FFFFFF;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.cartIconBtn:hover {
+  background: var(--primary);
+  transform: scale(1.05);
+}
+
+.compareRow {
+  margin-top: 12px;
+  width: 100%;
+}
+
+.compareToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--foreground-secondary);
+  font-size: 12px;
+  padding: 0;
+}
+
+.inCompare {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.loader {
+  padding: 80px 0;
+  text-align: center;
+  color: var(--foreground-secondary);
+  font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .productsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 800px) {
+  .layoutGrid {
+    grid-template-columns: 1fr;
+  }
+  .productsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 550px) {
+  .productsGrid {
+    grid-template-columns: 1fr;
+  }
+}

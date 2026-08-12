@@ -1,0 +1,694 @@
+.dashboardPage {
+  padding: 60px 24px;
+}
+
+.layoutGrid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+/* Sidebar styling */
+.sidebar {
+  border-radius: var(--radius-md);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.profileHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 20px;
+}
+
+.avatar {
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, var(--primary), #3b82f6);
+  color: #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 87, 255, 0.2);
+}
+
+.profileHeader h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.profileHeader span {
+  font-size: 12px;
+  color: var(--foreground-secondary);
+}
+
+.memberBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+  border-radius: var(--radius-full);
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.navMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.navMenu button {
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--foreground-secondary);
+  transition: all 0.2s ease;
+}
+
+.navMenu button:hover {
+  background: var(--bg-secondary);
+  color: var(--foreground);
+}
+
+.menuActive {
+  background: rgba(0, 87, 255, 0.08) !important;
+  color: var(--primary) !important;
+  font-weight: 600;
+}
+
+.logoutBtn {
+  margin-top: 12px;
+  border-top: 1px solid var(--border-color) !important;
+  padding-top: 16px !important;
+}
+
+.logoutBtn:hover {
+  color: var(--error) !important;
+  background: rgba(239, 68, 68, 0.08) !important;
+}
+
+/* Content Area */
+.contentArea {
+  border-radius: var(--radius-md);
+  padding: 36px;
+  min-height: 520px;
+}
+
+.tabContent h2 {
+  font-size: 22px;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.tabSubheading {
+  color: var(--foreground-secondary);
+  font-size: 13px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Profile Form & Cards */
+.profileGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 650px;
+}
+
+.detailCard {
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.detailRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.fieldLabel {
+  font-size: 12px;
+  color: var(--foreground-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.fieldValue {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.btnEdit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btnEdit:hover {
+  background: rgba(0, 87, 255, 0.08);
+  border-color: var(--primary);
+}
+
+.editFormInline {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.editFormInline input {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--primary);
+  background: var(--bg-secondary);
+  color: var(--foreground);
+  font-size: 15px;
+  font-weight: 500;
+  width: 100%;
+  position: relative;
+  z-index: 5;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.editFormInline input:focus {
+  box-shadow: 0 0 0 3px rgba(0, 87, 255, 0.2);
+}
+
+.inlineFormActions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.btnSave {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--primary);
+  color: #ffffff;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnCancel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--foreground-secondary);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.verifiedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+}
+
+/* Orders */
+.ordersList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.orderCard {
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.orderHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.statusBadge {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.orderBody {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 13px;
+  color: var(--foreground-secondary);
+}
+
+.orderBody strong {
+  font-size: 18px;
+  color: var(--foreground);
+  display: block;
+  margin-top: 4px;
+}
+
+.orderActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px stroke var(--border-color);
+}
+
+.btnActionOutline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--foreground);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btnActionOutline:hover {
+  background: var(--bg-primary);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* Devices Locker */
+.deviceHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.devicesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.deviceCard {
+  border-radius: var(--radius-md);
+  padding: 20px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+}
+
+.deviceCardHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.deviceIconBox {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(0, 87, 255, 0.1);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.deviceCardHead h4 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.deviceCardHead span {
+  font-size: 12px;
+  color: var(--foreground-secondary);
+}
+
+.compatPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  font-size: 11px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+}
+
+.btnRemoveDevice {
+  background: none;
+  border: none;
+  color: var(--foreground-secondary);
+  cursor: pointer;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.btnRemoveDevice:hover {
+  color: var(--error);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Addresses */
+.addrHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.addressesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.addrCard {
+  border-radius: var(--radius-md);
+  padding: 20px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  position: relative;
+}
+
+.addrHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.addrTag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: rgba(0, 87, 255, 0.1);
+  color: var(--primary);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.addrCard p {
+  font-size: 13px;
+  color: var(--foreground-secondary);
+  line-height: 1.5;
+}
+
+/* Support Portal */
+.supportContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.ticketForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ticketForm input, .ticketForm textarea {
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--foreground);
+}
+
+.ticketForm textarea {
+  min-height: 120px;
+}
+
+.ticketsHistory h3 {
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.ticketCard {
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--border-color);
+}
+
+.ticketStatus {
+  background: rgba(0, 87, 255, 0.1);
+  color: var(--primary);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* Security & Reset Password */
+.securityGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 650px;
+}
+
+.securityCard {
+  border-radius: var(--radius-md);
+  padding: 24px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.secHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.secIcon {
+  color: var(--primary);
+}
+
+.secHeader h4 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.secHeader p {
+  font-size: 12px;
+  color: var(--foreground-secondary);
+}
+
+.resetPasswordForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inputGroup label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--foreground-secondary);
+}
+
+.inputGroup input {
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--foreground);
+  font-size: 14px;
+}
+
+.inputGroup input::placeholder {
+  color: var(--foreground-secondary);
+  opacity: 0.8;
+}
+
+.toggleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toggleSwitch {
+  width: 50px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: var(--border-color);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s ease;
+}
+
+.switchOn {
+  background: var(--success);
+}
+
+.switchSlider {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.2s ease;
+}
+
+.switchOn .switchSlider {
+  transform: translateX(24px);
+}
+
+/* Modal Overlays with Solid High-Contrast Backgrounds */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 18, 32, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modalBox {
+  background: var(--card-bg, #ffffff);
+  color: var(--foreground);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 32px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  position: relative;
+  z-index: 100000;
+}
+
+.modalBox h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--foreground);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalForm .inputGroup label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 4px;
+}
+
+.modalForm .inputGroup input,
+.modalForm .inputGroup select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--foreground);
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.modalForm .inputGroup input:focus,
+.modalForm .inputGroup select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 87, 255, 0.2);
+  outline: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 900px) {
+  .layoutGrid, .supportContainer {
+    grid-template-columns: 1fr;
+  }
+}

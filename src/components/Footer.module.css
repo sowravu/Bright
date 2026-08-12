@@ -1,0 +1,212 @@
+.footer {
+  background: var(--secondary);
+  color: #FFFFFF;
+  border-top: 1px solid var(--border-color);
+  margin-top: auto;
+  font-size: 14px;
+}
+
+.benefitsGrid {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.benefitItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.benefitIcon {
+  color: var(--accent);
+}
+
+.benefitItem h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.benefitItem p {
+  font-size: 13px;
+  color: var(--foreground-secondary);
+}
+
+.mainFooter {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 2fr;
+  gap: 60px;
+  padding: 60px 24px;
+}
+
+.brandCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.logo {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.04em;
+}
+
+.tagline {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--accent);
+}
+
+.desc {
+  color: var(--foreground-secondary);
+  line-height: 1.6;
+  font-size: 13px;
+}
+
+.appBadges {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.appBadge {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.appBadge:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.linksCol h3, .subCol h3 {
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 24px;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.linksCol ul {
+  list-style: none;
+}
+
+.linksCol li {
+  margin-bottom: 12px;
+}
+
+.linksCol a {
+  color: var(--foreground-secondary);
+  transition: color 0.2s ease;
+  font-size: 13px;
+}
+
+.linksCol a:hover {
+  color: #FFFFFF;
+}
+
+.subCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.subCol p {
+  color: var(--foreground-secondary);
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.subForm {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
+  padding: 4px;
+}
+
+.subForm input {
+  background: transparent;
+  border: none;
+  padding: 10px 16px;
+  color: #FFFFFF;
+  font-size: 13px;
+  width: 100%;
+}
+
+.subBtn {
+  background: var(--primary);
+  border: none;
+  color: #FFFFFF;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.subBtn:hover {
+  background: var(--primary-hover);
+}
+
+.successMsg {
+  font-size: 12px;
+  color: var(--success);
+  font-weight: 500;
+}
+
+.bottomFooter {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 24px 0;
+  font-size: 12px;
+  color: var(--foreground-secondary);
+}
+
+.bottomContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.paymentsStrip {
+  display: flex;
+  gap: 16px;
+}
+
+.paymentsStrip span {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  color: #FFFFFF;
+}
+
+@media (max-width: 900px) {
+  .benefitsGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .mainFooter {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .bottomContainer {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+}
