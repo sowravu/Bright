@@ -75,6 +75,8 @@ export default function AccessoriesAdminPage() {
   const [variantStockRows, setVariantStockRows] = useState<VariantStockRow[]>([]);
   const [deleteConfirmTarget, setDeleteConfirmTarget] = useState<{ prodId: string; prodName: string } | null>(null);
 
+  const [dbAccessories, setDbAccessories] = useState<any[]>([]);
+
   const fetchDbData = async () => {
     try {
       const bRes = await fetch('http://localhost:5000/api/brands');
@@ -121,6 +123,7 @@ export default function AccessoriesAdminPage() {
           specs: item.specifications || item.specs || {},
           isActive: item.isActive !== false,
         }));
+        setDbAccessories(normalized);
         dispatch(setProducts(normalized));
       }
     } catch (_) {}
@@ -316,7 +319,19 @@ export default function AccessoriesAdminPage() {
     setDeleteConfirmTarget(null);
   };
 
-  const accessoriesList = productsCatalog.filter((p: any) => p.category === 'accessories');
+  const activeCatalog = dbAccessories.length > 0 ? dbAccessories : productsCatalog;
+  const accessoriesList = (activeCatalog || []).filter((p: any) => {
+    if (!p) return false;
+    const isAcc = (p.category || '').toLowerCase() === 'accessories' || Boolean(p.accessoryType || p.subcategory);
+    if (!isAcc) return false;
+
+    if (catalogSearchQuery.trim()) {
+      const q = catalogSearchQuery.toLowerCase();
+      const bName = typeof p.brand === 'object' ? (p.brand?.name || '') : String(p.brand || '');
+      return (p.name || '').toLowerCase().includes(q) || bName.toLowerCase().includes(q);
+    }
+    return true;
+  });
 
   const totalPages = Math.ceil(accessoriesList.length / pageSize) || 1;
   const paginatedAccessories = accessoriesList.slice(

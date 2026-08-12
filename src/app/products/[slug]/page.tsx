@@ -13,6 +13,28 @@ import {
 import styles from './details.module.css';
 import { useToast } from '../../../context/ToastContext';
 
+function checkIsAccessory(p: any): boolean {
+  if (!p) return false;
+  if (p.category === 'accessories' || p.category === 'accessory' || !!p.accessoryType) {
+    return true;
+  }
+  if (p.variants && p.variants.some((v: any) => Boolean(v.ram || v.storage))) {
+    return false;
+  }
+  return false;
+}
+
+function getFormattedProductName(p: any): string {
+  if (!p || !p.name) return '';
+  const brandName = (p.brand?.name || p.brand || '').toString().trim();
+  const prodName = p.name.trim();
+
+  if (brandName && prodName.toLowerCase().startsWith(brandName.toLowerCase())) {
+    return prodName;
+  }
+  return brandName ? `${brandName} ${prodName}` : prodName;
+}
+
 function getParsedSpecs(p: any) {
   if (!p) return {};
   const lowerName = (p.name || '').toLowerCase();
@@ -152,22 +174,30 @@ export default function ProductDetails() {
           setProduct(data);
           setReviewsList(data.reviews || []);
           
+          const isAcc = checkIsAccessory(data);
+
           // Set initial variants configurations
           if (data.variants && data.variants.length > 0) {
-            const initColor = data.variants[0].color;
+            const initColor = data.variants[0].color || (data.colorVariants && data.colorVariants[0]) || (data.colors && data.colors[0]) || '';
             setSelectedColor(initColor);
-            setSelectedRam(data.variants[0].ram);
-            setSelectedStorage(data.variants[0].storage);
-            setSelectedPrice(parseFloat(data.variants[0].price));
-            setSelectedStock(data.variants[0].stock !== undefined ? data.variants[0].stock : data.stock);
+            setSelectedRam(data.variants[0].ram || (data.ramVariants && data.ramVariants[0]) || data.specifications?.ram || data.specs?.ram || '');
+            setSelectedStorage(data.variants[0].storage || (data.storageVariants && data.storageVariants[0]) || data.specifications?.storage || data.specs?.storage || '');
+            setSelectedPrice(parseFloat(data.variants[0].discountPrice || data.variants[0].price || data.discountPrice || data.price || 0));
+            setSelectedStock(data.variants[0].stock !== undefined ? data.variants[0].stock : (data.stock !== undefined ? data.stock : 10));
             
-            const colorImg = data.colorImages?.[initColor] || data.colorImages?.[data.colors?.find((c: string) => c.toLowerCase() === initColor.toLowerCase()) || ''];
+            const colorImg = data.variants[0].image || data.colorImages?.[initColor] || data.colorImages?.[data.colorVariants?.find((c: string) => c.toLowerCase() === (initColor || '').toLowerCase()) || ''] || data.colorImages?.[data.colors?.find((c: string) => c.toLowerCase() === (initColor || '').toLowerCase()) || ''];
             if (colorImg) {
               setColorImageOverride(colorImg);
             }
           } else {
-            setSelectedPrice(parseFloat(data.discountPrice || data.basePrice));
+            setSelectedPrice(parseFloat(data.discountPrice || data.price || data.basePrice || 0));
             setSelectedStock(data.stock !== undefined ? data.stock : 10);
+            const initColor = (data.colorVariants && data.colorVariants[0]) || (data.colors && data.colors[0]) || '';
+            if (initColor) {
+              setSelectedColor(initColor);
+              const colorImg = data.colorImages?.[initColor];
+              if (colorImg) setColorImageOverride(colorImg);
+            }
           }
         } else {
           // Mock data fallback
@@ -184,20 +214,20 @@ export default function ProductDetails() {
       const match = productsCatalog.find((p: any) => p.slug === slug);
       if (match) {
         const clonedMatch = JSON.parse(JSON.stringify(match));
-        const defaultColor = clonedMatch.colors?.[0] || 'Default';
+        const defaultColor = clonedMatch.colorVariants?.[0] || clonedMatch.colors?.[0] || 'Default';
         const defaultRam = clonedMatch.specs?.ram || '8GB';
         const defaultStorage = clonedMatch.specs?.storage || '128GB';
 
-        if (clonedMatch.category === 'accessories') {
-          clonedMatch.variants = [];
+        if (clonedMatch.category === 'accessories' || clonedMatch.accessoryType) {
+          clonedMatch.variants = clonedMatch.variants || [];
           setProduct(clonedMatch);
           setReviewsList(clonedMatch.reviews || [
             { id: 'r1', rating: 5, comment: 'Exceptional build quality and value!', user: { name: 'Aryan K.' } }
           ]);
-          setSelectedColor(clonedMatch.colors?.[0] || 'Default');
+          setSelectedColor(defaultColor);
           setSelectedRam('');
           setSelectedStorage('');
-          setSelectedPrice(parseFloat((clonedMatch.discountPrice || clonedMatch.basePrice || 0).toString()));
+          setSelectedPrice(parseFloat((clonedMatch.discountPrice || clonedMatch.basePrice || clonedMatch.price || 0).toString()));
           setSelectedStock(clonedMatch.stock !== undefined ? clonedMatch.stock : 15);
           
           const colorImg = clonedMatch.colorImages?.[defaultColor] || clonedMatch.colorImages?.[clonedMatch.colors?.find((c: string) => c.toLowerCase() === defaultColor.toLowerCase()) || ''];
@@ -337,12 +367,29 @@ export default function ProductDetails() {
       return;
     }
 
+    const isAcc = checkIsAccessory(product);
+
+    if (isAcc) {
+      const matched = product.variants.find(
+        (v: any) => v.color && v.color.toLowerCase() === newColor.toLowerCase()
+      ) || product.variants[0];
+
+      setSelectedColor(matched.color || newColor);
+      setSelectedPrice(parseFloat(matched.discountPrice || matched.price || product.discountPrice || product.price || 0));
+      setSelectedStock(matched.stock !== undefined ? matched.stock : product.stock);
+      const colorImg = matched.image || product.colorImages?.[matched.color || newColor];
+      if (colorImg) {
+        setColorImageOverride(colorImg);
+      }
+      return;
+    }
+
     // Try to find a variant matching color, RAM, and storage
     let matched = product.variants.find(
       (v: any) =>
         (!v.color || v.color.toLowerCase() === newColor.toLowerCase()) &&
-        v.ram === newRam &&
-        v.storage === newStorage
+        (!newRam || v.ram === newRam) &&
+        (!newStorage || v.storage === newStorage)
     );
 
     // If not found, try finding a variant matching color first, then find closest specs
@@ -358,7 +405,9 @@ export default function ProductDetails() {
     // If still not found (e.g. no variants for this color yet), try finding matching RAM + Storage
     if (!matched) {
       matched = product.variants.find(
-        (v: any) => v.ram === newRam && v.storage === newStorage
+        (v: any) =>
+          (!newRam || v.ram === newRam) &&
+          (!newStorage || v.storage === newStorage)
       );
     }
 
@@ -371,10 +420,10 @@ export default function ProductDetails() {
     setSelectedColor(matched.color || newColor);
     setSelectedRam(matched.ram || newRam);
     setSelectedStorage(matched.storage || newStorage);
-    setSelectedPrice(parseFloat(matched.discountPrice || matched.price));
+    setSelectedPrice(parseFloat(matched.discountPrice || matched.price || product.discountPrice || product.price || 0));
     setSelectedStock(matched.stock !== undefined ? matched.stock : product.stock);
     
-    const colorImg = product.colorImages?.[matched.color || newColor] || product.colorImages?.[product.colors?.find((c: string) => c.toLowerCase() === (matched.color || newColor).toLowerCase()) || ''];
+    const colorImg = matched.image || product.colorImages?.[matched.color || newColor] || product.colorImages?.[product.colors?.find((c: string) => c.toLowerCase() === (matched.color || newColor).toLowerCase()) || ''];
     if (colorImg) {
       setColorImageOverride(colorImg);
     }
@@ -383,11 +432,20 @@ export default function ProductDetails() {
   // Helper to determine if a color variant configuration is out of stock for the selected storage/RAM
   const isColorConfigOutOfStock = (colorName: string) => {
     if (!product || !product.variants) return false;
+    const isAcc = checkIsAccessory(product);
+
+    if (isAcc) {
+      const matchedVar = product.variants.find(
+        (v: any) => v.color && v.color.toLowerCase() === colorName.toLowerCase()
+      );
+      return matchedVar ? matchedVar.stock === 0 : false;
+    }
+
     const matchedVar = product.variants.find(
       (v: any) =>
         (!v.color || v.color.toLowerCase() === colorName.toLowerCase()) &&
-        v.ram === selectedRam &&
-        v.storage === selectedStorage
+        (!selectedRam || v.ram === selectedRam) &&
+        (!selectedStorage || v.storage === selectedStorage)
     );
     return matchedVar ? matchedVar.stock === 0 : false;
   };
@@ -523,14 +581,35 @@ export default function ProductDetails() {
     return <div className={styles.loading}>Error loading product details.</div>;
   }
 
+  // Helper flag to identify accessories
+  const isAccessory = checkIsAccessory(product);
+
+  // Available colors array derived from actual variants in DB
+  const availableColors: string[] = (() => {
+    if (!product) return [];
+    if (product.variants && product.variants.length > 0) {
+      const varColors = Array.from(new Set(product.variants.map((v: any) => v.color).filter(Boolean))) as string[];
+      if (varColors.length > 0) return varColors;
+    }
+    if (product.colorVariants && product.colorVariants.length > 0) {
+      return product.colorVariants;
+    }
+    if (product.colors && product.colors.length > 0) {
+      return product.colors;
+    }
+    return [];
+  })();
+
   // Collect all unique RAM + Storage variant options across the entire product
   const allVariantConfigs = (() => {
-    if (!product.variants || product.variants.length === 0) return [];
+    if (!product.variants || product.variants.length === 0 || isAccessory) return [];
     const map = new Map<string, any>();
     product.variants.forEach((v: any) => {
-      const key = `${v.storage || '128GB'}-${v.ram || '8GB'}`;
+      const storageVal = v.storage || product.specifications?.storage || product.specs?.storage || '';
+      const ramVal = v.ram || product.specifications?.ram || product.specs?.ram || '';
+      const key = `${storageVal}-${ramVal}`;
       if (!map.has(key)) {
-        map.set(key, v);
+        map.set(key, { ...v, storage: storageVal, ram: ramVal });
       }
     });
     return Array.from(map.values());
@@ -579,13 +658,13 @@ export default function ProductDetails() {
         <div className={styles.metaCol}>
           {/* 1. Visit Brand & Dynamically Formatted Title */}
           <div className={styles.visitBrandRow}>
-            {product.category === 'accessories' ? (
+            {isAccessory ? (
               <h1 className={styles.formattedTitle}>
-                {product.brand?.name || product.brand} {product.name} {selectedColor ? `(${selectedColor})` : ''}
+                {getFormattedProductName(product)} {selectedColor ? `(${selectedColor})` : ''}
               </h1>
             ) : (
               <h1 className={styles.formattedTitle}>
-                {product.brand?.name || product.brand} {product.name} ({selectedColor}, {selectedStorage}) ({selectedRam} RAM)
+                {getFormattedProductName(product)} ({selectedColor}{selectedStorage ? `, ${selectedStorage}` : ''}){selectedRam ? ` (${selectedRam} RAM)` : ''}
               </h1>
             )}
             <div className={styles.ratingBadge}>
@@ -608,7 +687,7 @@ export default function ProductDetails() {
 
           {/* 2. Price Hero Row */}
           {(() => {
-            const baseP = product.basePrice || selectedPrice;
+            const baseP = product.basePrice || product.price || selectedPrice;
             const discP = selectedPrice;
             const hasDiscount = baseP > discP;
             const discountPercent = hasDiscount ? Math.round(((baseP - discP) / baseP) * 100) : 0;
@@ -627,34 +706,57 @@ export default function ProductDetails() {
           })()}
 
           {/* 3. Selected Color Section */}
-          <div className={styles.colorSelectorSection} style={{ marginTop: '20px' }}>
-            <p><strong>Selected Color:</strong> <span className={styles.activeColorText}>{selectedColor}</span></p>
-            <div className={styles.colorSelectorRow}>
-              {product.colors?.map((col: string, idx: number) => {
-                const isOutOfStock = isColorConfigOutOfStock(col);
-                return (
-                  <button
-                    key={col}
-                    onClick={() => {
-                      updateSelection(col, selectedRam, selectedStorage);
-                      if (product.images?.[idx]) {
-                        setActiveImageIdx(idx);
-                      }
-                    }}
-                    className={`${styles.colorSelectorBtn} ${selectedColor === col ? styles.activeColorBtn : ''} ${
-                      isOutOfStock ? styles.outOfStockColorBtn : ''
-                    }`}
-                    title={isOutOfStock ? `${col} (Out of Stock for selected configuration)` : col}
-                  >
-                    {col} {isOutOfStock && ' (Out of Stock)'}
-                  </button>
-                );
-              })}
+          {availableColors.length > 0 && (
+            <div className={styles.colorSelectorSection} style={{ marginTop: '20px' }}>
+              <p><strong>Selected Color:</strong> <span className={styles.activeColorText}>{selectedColor}</span></p>
+              <div className={styles.colorSelectorRow}>
+                {availableColors.map((col: string, idx: number) => {
+                  const isOutOfStock = isColorConfigOutOfStock(col);
+                  const isSelected = selectedColor?.toLowerCase() === col.toLowerCase();
+                  return (
+                    <button
+                      key={col}
+                      onClick={() => {
+                        if (isAccessory) {
+                          const matchedVar = product.variants?.find((v: any) => v.color && v.color.toLowerCase() === col.toLowerCase());
+                          setSelectedColor(col);
+                          if (matchedVar) {
+                            if (matchedVar.price || matchedVar.discountPrice) {
+                              setSelectedPrice(parseFloat(matchedVar.discountPrice || matchedVar.price));
+                            }
+                            if (matchedVar.stock !== undefined) setSelectedStock(matchedVar.stock);
+                            if (matchedVar.image) {
+                              setColorImageOverride(matchedVar.image);
+                            } else {
+                              const colorImg = product.colorImages?.[col] || product.colorImages?.[availableColors.find((c: string) => c.toLowerCase() === col.toLowerCase()) || ''];
+                              if (colorImg) setColorImageOverride(colorImg);
+                            }
+                          } else {
+                            const colorImg = product.colorImages?.[col] || product.colorImages?.[availableColors.find((c: string) => c.toLowerCase() === col.toLowerCase()) || ''];
+                            if (colorImg) setColorImageOverride(colorImg);
+                          }
+                        } else {
+                          updateSelection(col, selectedRam, selectedStorage);
+                          if (product.images?.[idx]) {
+                            setActiveImageIdx(idx);
+                          }
+                        }
+                      }}
+                      className={`${styles.colorSelectorBtn} ${isSelected ? styles.activeColorBtn : ''} ${
+                        isOutOfStock ? styles.outOfStockColorBtn : ''
+                      }`}
+                      title={isOutOfStock ? `${col} (Out of Stock)` : col}
+                    >
+                      {col} {isOutOfStock && ' (Out of Stock)'}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* 4. Variants Grid (Storage & RAM buttons) */}
-          {product.category !== 'accessories' && allVariantConfigs.length > 0 && (
+          {/* 4. Variants Grid for Smartphones */}
+          {!isAccessory && allVariantConfigs.length > 0 && (
             <div style={{ marginTop: '20px' }}>
               <p><strong>Variant:</strong> <span className={styles.activeVariantText}>{selectedStorage} + {selectedRam}</span></p>
               <div className={styles.variantCardRow}>
@@ -682,6 +784,56 @@ export default function ProductDetails() {
                       } ${isOutOfStock ? styles.outOfStockVariantCard : ''}`}
                     >
                       <div className={styles.varTitle}>{v.storage} + {v.ram}</div>
+                      {hasDiscount && (
+                        <div className={styles.varDiscountRow}>
+                          <span className={styles.varDiscountArrow}>↓{discountPercent}%</span>
+                          <span className={styles.varBasePrice}>₹{baseP.toLocaleString()}</span>
+                        </div>
+                      )}
+                      <div className={styles.varPrice}>₹{discP.toLocaleString()}</div>
+                      {isOutOfStock && (
+                        <span className={styles.varStockAlert}>Out of Stock</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Accessory Variant Selection Buttons */}
+          {isAccessory && product.variants && product.variants.length > 0 && (
+            <div style={{ marginTop: '20px' }}>
+              <p><strong>Available Options / Variants:</strong> <span className={styles.activeVariantText}>{selectedColor || 'Standard'}</span></p>
+              <div className={styles.variantCardRow}>
+                {product.variants.map((v: any, idx: number) => {
+                  const title = v.color || v.name || v.capacity || `Option ${idx + 1}`;
+                  const baseP = parseFloat(v.price || product.basePrice || product.price || 0);
+                  const discP = parseFloat(v.discountPrice || v.price || product.discountPrice || product.basePrice || product.price || 0);
+                  const hasDiscount = baseP > discP;
+                  const discountPercent = hasDiscount ? Math.round(((baseP - discP) / baseP) * 100) : 0;
+                  const isSelected = selectedColor?.toLowerCase() === (v.color || '').toLowerCase() || (idx === 0 && !selectedColor);
+                  const isOutOfStock = v.stock === 0;
+
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        if (v.color) setSelectedColor(v.color);
+                        setSelectedPrice(discP);
+                        if (v.stock !== undefined) setSelectedStock(v.stock);
+                        if (v.image) {
+                          setColorImageOverride(v.image);
+                        } else if (v.color) {
+                          const colorImg = product.colorImages?.[v.color];
+                          if (colorImg) setColorImageOverride(colorImg);
+                        }
+                      }}
+                      className={`${styles.variantSelectorCard} ${
+                        isSelected ? styles.activeVariantCard : ''
+                      } ${isOutOfStock ? styles.outOfStockVariantCard : ''}`}
+                    >
+                      <div className={styles.varTitle}>{title}</div>
                       {hasDiscount && (
                         <div className={styles.varDiscountRow}>
                           <span className={styles.varDiscountArrow}>↓{discountPercent}%</span>
@@ -737,7 +889,7 @@ export default function ProductDetails() {
             >
               <ShoppingCart size={18} /> {selectedStock !== 0 ? 'Add to Cart' : 'Out of Stock'}
             </button>
-            {product.category !== 'accessories' && (
+            {!isAccessory && (
               <button
                 className="btn btnSecondary"
                 onClick={handleToggleCompare}
@@ -766,8 +918,53 @@ export default function ProductDetails() {
         </div>
       </div>
 
-      {/* Technical Specifications Grid (nested directly under image card) */}
+      {/* Technical Specifications Grid */}
       {(() => {
+        if (isAccessory) {
+          const spec = product.specifications || {};
+          return (
+            <section className={`${styles.specsSection} glass`} style={{ padding: '24px', borderRadius: 'var(--radius-md)', margin: 0 }}>
+              <h2 style={{ fontSize: '18px', marginBottom: '16px' }}>Accessory Specifications</h2>
+              <div className={styles.specsGrid}>
+                <div className={styles.specCategory}>
+                  <h3>General & Compatibility</h3>
+                  <div className={styles.specItem}>
+                    <span className={styles.specLabel}>Brand</span>
+                    <span className={styles.specValue}>{product.brand?.name || product.brand || 'Xiaomi'}</span>
+                  </div>
+                  <div className={styles.specItem}>
+                    <span className={styles.specLabel}>Product Name</span>
+                    <span className={styles.specValue}>{product.name}</span>
+                  </div>
+                  <div className={styles.specItem}>
+                    <span className={styles.specLabel}>Category / Type</span>
+                    <span className={styles.specValue}>{product.accessoryType?.name || 'Mobile Accessory'}</span>
+                  </div>
+                  <div className={styles.specItem}>
+                    <span className={styles.specLabel}>Selected Color</span>
+                    <span className={styles.specValue}>{selectedColor || 'Standard'}</span>
+                  </div>
+                </div>
+                <div className={styles.specCategory}>
+                  <h3>Build & Features</h3>
+                  <div className={styles.specItem}>
+                    <span className={styles.specLabel}>Compatibility</span>
+                    <span className={styles.specValue}>{spec.compatibility || 'Universal Smartphone Compatible'}</span>
+                  </div>
+                  <div className={styles.specItem}>
+                    <span className={styles.specLabel}>Material</span>
+                    <span className={styles.specValue}>{spec.material || 'Premium Durable Polycarbonate'}</span>
+                  </div>
+                  <div className={styles.specItem}>
+                    <span className={styles.specLabel}>Warranty</span>
+                    <span className={styles.specValue}>{spec.warranty || '1 Year Manufacturer Warranty'}</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          );
+        }
+
         const specs = getParsedSpecs(product);
         return (
           <section className={`${styles.specsSection} glass`} style={{ padding: '24px', borderRadius: 'var(--radius-md)', margin: 0 }}>
