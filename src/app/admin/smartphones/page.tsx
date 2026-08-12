@@ -77,6 +77,8 @@ export default function SmartphonesAdminPage() {
   const [variantStockRows, setVariantStockRows] = useState<VariantStockRow[]>([]);
   const [deleteConfirmTarget, setDeleteConfirmTarget] = useState<{ prodId: string; prodName: string } | null>(null);
 
+  const [dbProducts, setDbProducts] = useState<any[]>([]);
+
   const fetchDbData = async () => {
     try {
       const bRes = await fetch('http://localhost:5000/api/brands');
@@ -113,6 +115,7 @@ export default function SmartphonesAdminPage() {
           specs: item.specifications || item.specs || {},
           isActive: item.isActive !== false,
         }));
+        setDbProducts(normalized);
         dispatch(setProducts(normalized));
       }
     } catch (_) {}
@@ -325,12 +328,17 @@ export default function SmartphonesAdminPage() {
     setDeleteConfirmTarget(null);
   };
 
-  const smartphonesList = productsCatalog.filter((p: any) => {
-    const isSmartphone = p.category === 'smartphones' || (!p.category || p.category !== 'accessories');
+  const activeCatalog = dbProducts.length > 0 ? dbProducts : productsCatalog;
+  const smartphonesList = (activeCatalog || []).filter((p: any) => {
+    if (!p) return false;
+    const cat = (p.category || 'smartphones').toString().toLowerCase();
+    const isSmartphone = cat === 'smartphones' || cat !== 'accessories';
     if (!isSmartphone) return false;
+
     if (catalogSearchQuery.trim()) {
       const q = catalogSearchQuery.toLowerCase();
-      return p.name?.toLowerCase().includes(q) || p.brand?.name?.toLowerCase().includes(q);
+      const bName = typeof p.brand === 'object' ? (p.brand?.name || '') : String(p.brand || '');
+      return (p.name || '').toLowerCase().includes(q) || bName.toLowerCase().includes(q);
     }
     return true;
   });

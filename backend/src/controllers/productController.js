@@ -226,10 +226,34 @@ const getProducts = async (req, res, next) => {
  */
 const getProductById = async (req, res, next) => {
   try {
-    const product = await Product.findById(req.params.id).populate('brand', 'name logo');
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
+    const id = req.params.id;
+    let product = null;
+
+    if (mongoose.isValidObjectId(id)) {
+      product = await Product.findById(id).populate('brand', 'name logo');
+      if (!product) {
+        const Accessory = require('../models/Accessory');
+        product = await Accessory.findById(id).populate('brand', 'name logo').populate('accessoryType', 'name');
+      }
     }
+
+    if (!product) {
+      product = await Product.findOne({
+        $or: [{ slug: id }, { name: new RegExp('^' + id.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') + '$', 'i') }]
+      }).populate('brand', 'name logo');
+    }
+
+    if (!product) {
+      const Accessory = require('../models/Accessory');
+      product = await Accessory.findOne({
+        $or: [{ slug: id }, { name: new RegExp('^' + id.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') + '$', 'i') }]
+      }).populate('brand', 'name logo').populate('accessoryType', 'name');
+    }
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product or Accessory not found' });
+    }
+
     res.json(product);
   } catch (error) {
     next(error);
