@@ -523,11 +523,18 @@ export default function ProductDetails() {
     return <div className={styles.loading}>Error loading product details.</div>;
   }
 
-  // Filter variants to show the ones matching the selected color, or fallback to all variants
-  const colorMatchingVariants = product.variants?.filter(
-    (v: any) => !v.color || v.color.toLowerCase() === selectedColor.toLowerCase()
-  ) || [];
-  const displayVariants = colorMatchingVariants.length > 0 ? colorMatchingVariants : (product.variants || []);
+  // Collect all unique RAM + Storage variant options across the entire product
+  const allVariantConfigs = (() => {
+    if (!product.variants || product.variants.length === 0) return [];
+    const map = new Map<string, any>();
+    product.variants.forEach((v: any) => {
+      const key = `${v.storage || '128GB'}-${v.ram || '8GB'}`;
+      if (!map.has(key)) {
+        map.set(key, v);
+      }
+    });
+    return Array.from(map.values());
+  })();
 
   return (
     <div className={`${styles.detailsPage} container`}>
@@ -570,72 +577,7 @@ export default function ProductDetails() {
 
         {/* Right Column: Buying parameters */}
         <div className={styles.metaCol}>
-          {/* Selected Color Section */}
-          <div className={styles.colorSelectorSection}>
-            <p><strong>Selected Color:</strong> <span className={styles.activeColorText}>{selectedColor}</span></p>
-            <div className={styles.colorSelectorRow}>
-              {product.colors?.map((col: string, idx: number) => {
-                const isOutOfStock = isColorConfigOutOfStock(col);
-                return (
-                  <button
-                    key={col}
-                    onClick={() => {
-                      updateSelection(col, selectedRam, selectedStorage);
-                      if (product.images?.[idx]) {
-                        setActiveImageIdx(idx);
-                      }
-                    }}
-                    className={`${styles.colorSelectorBtn} ${selectedColor === col ? styles.activeColorBtn : ''} ${
-                      isOutOfStock ? styles.outOfStockColorBtn : ''
-                    }`}
-                    title={isOutOfStock ? `${col} (Out of Stock for selected configuration)` : col}
-                  >
-                    {col} {isOutOfStock && ' (Out of Stock)'}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Variants Grid */}
-          {product.category !== 'accessories' && displayVariants.length > 0 && (
-            <div style={{ marginTop: '20px' }}>
-              <p><strong>Variant:</strong> <span className={styles.activeVariantText}>{selectedStorage} + {selectedRam}</span></p>
-              <div className={styles.variantCardRow}>
-                {displayVariants.map((v: any, idx: number) => {
-                  const baseP = parseFloat(v.price || product.basePrice || 0);
-                  const discP = parseFloat(v.discountPrice || product.discountPrice || v.price || product.basePrice || 0);
-                  const hasDiscount = baseP > discP;
-                  const discountPercent = hasDiscount ? Math.round(((baseP - discP) / baseP) * 100) : 0;
-                  const isOutOfStock = isVariantConfigOutOfStock(v);
-                  
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => updateSelection(selectedColor, v.ram, v.storage)}
-                      className={`${styles.variantSelectorCard} ${
-                        selectedRam === v.ram && selectedStorage === v.storage ? styles.activeVariantCard : ''
-                      } ${isOutOfStock ? styles.outOfStockVariantCard : ''}`}
-                    >
-                      <div className={styles.varTitle}>{v.storage} + {v.ram}</div>
-                      {hasDiscount && (
-                        <div className={styles.varDiscountRow}>
-                          <span className={styles.varDiscountArrow}>↓{discountPercent}%</span>
-                          <span className={styles.varBasePrice}>₹{baseP.toLocaleString()}</span>
-                        </div>
-                      )}
-                      <div className={styles.varPrice}>₹{discP.toLocaleString()}</div>
-                      {isOutOfStock && (
-                        <span className={styles.varStockAlert}>Out of Stock</span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Visit Brand & Dynamically Formatted Title */}
+          {/* 1. Visit Brand & Dynamically Formatted Title */}
           <div className={styles.visitBrandRow}>
             {product.category === 'accessories' ? (
               <h1 className={styles.formattedTitle}>
@@ -664,7 +606,7 @@ export default function ProductDetails() {
             </div>
           </div>
 
-          {/* Price Hero Row */}
+          {/* 2. Price Hero Row */}
           {(() => {
             const baseP = product.basePrice || selectedPrice;
             const discP = selectedPrice;
@@ -684,7 +626,80 @@ export default function ProductDetails() {
             );
           })()}
 
-          {/* Description */}
+          {/* 3. Selected Color Section */}
+          <div className={styles.colorSelectorSection} style={{ marginTop: '20px' }}>
+            <p><strong>Selected Color:</strong> <span className={styles.activeColorText}>{selectedColor}</span></p>
+            <div className={styles.colorSelectorRow}>
+              {product.colors?.map((col: string, idx: number) => {
+                const isOutOfStock = isColorConfigOutOfStock(col);
+                return (
+                  <button
+                    key={col}
+                    onClick={() => {
+                      updateSelection(col, selectedRam, selectedStorage);
+                      if (product.images?.[idx]) {
+                        setActiveImageIdx(idx);
+                      }
+                    }}
+                    className={`${styles.colorSelectorBtn} ${selectedColor === col ? styles.activeColorBtn : ''} ${
+                      isOutOfStock ? styles.outOfStockColorBtn : ''
+                    }`}
+                    title={isOutOfStock ? `${col} (Out of Stock for selected configuration)` : col}
+                  >
+                    {col} {isOutOfStock && ' (Out of Stock)'}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 4. Variants Grid (Storage & RAM buttons) */}
+          {product.category !== 'accessories' && allVariantConfigs.length > 0 && (
+            <div style={{ marginTop: '20px' }}>
+              <p><strong>Variant:</strong> <span className={styles.activeVariantText}>{selectedStorage} + {selectedRam}</span></p>
+              <div className={styles.variantCardRow}>
+                {allVariantConfigs.map((v: any, idx: number) => {
+                  const matchedVar = product.variants?.find(
+                    (item: any) =>
+                      (!item.color || item.color.toLowerCase() === selectedColor.toLowerCase()) &&
+                      item.ram === v.ram &&
+                      item.storage === v.storage
+                  ) || v;
+
+                  const baseP = parseFloat(matchedVar.price || product.basePrice || 0);
+                  const discP = parseFloat(matchedVar.discountPrice || matchedVar.price || product.discountPrice || product.basePrice || 0);
+                  const hasDiscount = baseP > discP;
+                  const discountPercent = hasDiscount ? Math.round(((baseP - discP) / baseP) * 100) : 0;
+                  const isSelected = selectedRam === v.ram && selectedStorage === v.storage;
+                  const isOutOfStock = matchedVar.stock === 0;
+                  
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => updateSelection(selectedColor, v.ram, v.storage)}
+                      className={`${styles.variantSelectorCard} ${
+                        isSelected ? styles.activeVariantCard : ''
+                      } ${isOutOfStock ? styles.outOfStockVariantCard : ''}`}
+                    >
+                      <div className={styles.varTitle}>{v.storage} + {v.ram}</div>
+                      {hasDiscount && (
+                        <div className={styles.varDiscountRow}>
+                          <span className={styles.varDiscountArrow}>↓{discountPercent}%</span>
+                          <span className={styles.varBasePrice}>₹{baseP.toLocaleString()}</span>
+                        </div>
+                      )}
+                      <div className={styles.varPrice}>₹{discP.toLocaleString()}</div>
+                      {isOutOfStock && (
+                        <span className={styles.varStockAlert}>Out of Stock</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* 5. Product Description */}
           <p className={styles.descText} style={{ marginTop: '20px' }}>{product.description}</p>
 
           {/* Accessories Checkboxes */}
