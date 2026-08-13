@@ -518,7 +518,7 @@ export default function ProductDetails() {
     // 1. Add Main Phone Variant
     dispatch(
       addToCart({
-        productId: product.id,
+        productId: product._id || product.id,
         name: `${product.name} (${selectedRam}/${selectedStorage})`,
         image: product.images[0],
         brand: product.brand?.name || 'Smart',

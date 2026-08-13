@@ -41,8 +41,12 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       state.isAuthenticated = true;
       if (typeof window !== 'undefined') {
-        localStorage.setItem('bright_token', action.payload.token);
-        localStorage.setItem('bright_user', JSON.stringify(action.payload.user));
+        try {
+          localStorage.setItem('bright_token', action.payload.token);
+          localStorage.setItem('bright_user', JSON.stringify(action.payload.user));
+        } catch (error) {
+          console.warn('Failed to save auth to localStorage:', error);
+        }
       }
     },
     logout(state) {
@@ -50,23 +54,23 @@ const authSlice = createSlice({
       state.user = null;
       state.isAuthenticated = false;
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('bright_token');
-        localStorage.removeItem('bright_user');
+        try {
+          localStorage.removeItem('bright_token');
+          localStorage.removeItem('bright_user');
+        } catch (_) {}
       }
     },
     rehydrate(state) {
       if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('bright_token');
-        const userJson = localStorage.getItem('bright_user');
-        if (token && userJson) {
-          try {
+        try {
+          const token = localStorage.getItem('bright_token');
+          const userJson = localStorage.getItem('bright_user');
+          if (token && userJson) {
             state.token = token;
             state.user = JSON.parse(userJson);
             state.isAuthenticated = true;
-          } catch (_) {
-            // parsing error
           }
-        }
+        } catch (_) {}
       }
       state.hydrated = true;
     },
@@ -74,7 +78,11 @@ const authSlice = createSlice({
       if (state.user) {
         state.user = { ...state.user, ...action.payload };
         if (typeof window !== 'undefined') {
-          localStorage.setItem('bright_user', JSON.stringify(state.user));
+          try {
+            localStorage.setItem('bright_user', JSON.stringify(state.user));
+          } catch (error) {
+            console.warn('Failed to update user in localStorage:', error);
+          }
         }
       }
     },

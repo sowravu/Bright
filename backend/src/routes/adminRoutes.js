@@ -12,4 +12,8 @@ router.get('/users', adminController.getUsers);
 router.put('/users/:id/block', adminController.toggleUserBlock);
 router.get('/analytics', adminController.getAnalytics);
 
+// Order Management Routes
+router.get('/orders', adminController.getAllOrders);
+router.put('/orders/:orderId/status', adminController.updateOrderStatus);
+
 module.exports = router;

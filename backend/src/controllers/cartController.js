@@ -173,6 +173,8 @@ const validateCoupon = async (req, res, next) => {
  * @route   POST /api/cart/checkout
  * @access  Private
  */
+const { decrementStockForOrder } = require('../utils/stockManager');
+
 const checkoutOrder = async (req, res, next) => {
   try {
     const { items, shippingAddress, paymentMethod, couponCode } = req.body;
@@ -184,6 +186,9 @@ const checkoutOrder = async (req, res, next) => {
     if (!shippingAddress || !shippingAddress.fullName || !shippingAddress.street || !shippingAddress.city) {
       return res.status(400).json({ message: 'Valid shipping address is required' });
     }
+
+    // Atomically decrement product/accessory inventory stock in MongoDB (Race Condition Safe)
+    await decrementStockForOrder(items);
 
     const subtotal = items.reduce((sum, i) => sum + Number(i.price) * Number(i.quantity), 0);
     

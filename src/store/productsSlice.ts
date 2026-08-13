@@ -3,6 +3,28 @@ import { createSlice } from '@reduxjs/toolkit';
 // Empty catalog - populated strictly from MongoDB database
 const initialFallbackProducts: any[] = [];
 
+const saveProductsToStorage = (items: any[]) => {
+  if (typeof window !== 'undefined') {
+    try {
+      const sanitized = items.map((item) => {
+        const cleanImages = (item.images || []).map((img: string) =>
+          img && (typeof img === 'string') && (img.startsWith('data:') || img.length > 2000) ? '' : img
+        );
+        return {
+          ...item,
+          images: cleanImages,
+        };
+      });
+      localStorage.setItem('bright_products', JSON.stringify(sanitized));
+    } catch (error) {
+      console.warn('Failed to save products to localStorage:', error);
+      try {
+        localStorage.removeItem('bright_products');
+      } catch (_) {}
+    }
+  }
+};
+
 const productsSlice = createSlice({
   name: 'products',
   initialState: {
@@ -11,15 +33,11 @@ const productsSlice = createSlice({
   reducers: {
     setProducts: (state, action) => {
       state.items = action.payload;
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('bright_products', JSON.stringify(state.items));
-      }
+      saveProductsToStorage(state.items);
     },
     addProduct: (state, action) => {
       state.items = [action.payload, ...state.items];
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('bright_products', JSON.stringify(state.items));
-      }
+      saveProductsToStorage(state.items);
     },
     updateProductStock: (state, action) => {
       const { id, stock } = action.payload;
@@ -27,16 +45,12 @@ const productsSlice = createSlice({
       if (prod) {
         prod.stock = stock;
       }
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('bright_products', JSON.stringify(state.items));
-      }
+      saveProductsToStorage(state.items);
     },
     removeProduct: (state, action) => {
       const id = action.payload;
       state.items = state.items.filter((item: any) => item.id !== id && item._id !== id);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('bright_products', JSON.stringify(state.items));
-      }
+      saveProductsToStorage(state.items);
     },
     rehydrate: (state) => {
       if (typeof window !== 'undefined') {
@@ -53,10 +67,10 @@ const productsSlice = createSlice({
               return true;
             });
             state.items = cleanRealItems;
-            localStorage.setItem('bright_products', JSON.stringify(cleanRealItems));
+            saveProductsToStorage(cleanRealItems);
           } catch (_) {
             state.items = [];
-            localStorage.removeItem('bright_products');
+            try { localStorage.removeItem('bright_products'); } catch (_) {}
           }
         }
       }

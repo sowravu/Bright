@@ -85,8 +85,28 @@ const orderSchema = new mongoose.Schema(
     },
     orderStatus: {
       type: String,
-      enum: ['Processing', 'Shipped', 'Delivered', 'Cancelled'],
+      enum: ['Processing', 'Confirmed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'],
       default: 'Processing',
+    },
+    razorpayOrderId: {
+      type: String,
+      default: '',
+    },
+    razorpayPaymentId: {
+      type: String,
+      default: '',
+    },
+    razorpaySignature: {
+      type: String,
+      default: '',
+    },
+    estimatedDeliveryDate: {
+      type: String,
+      default: '',
+    },
+    deliveredAt: {
+      type: Date,
+      default: null,
     },
     subtotal: {
       type: Number,

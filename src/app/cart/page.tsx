@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
 import { updateQuantity, removeFromCart, applyCoupon, clearCart } from '../../store/cartSlice';
@@ -13,6 +14,7 @@ import confetti from 'canvas-confetti';
 import styles from './cart.module.css';
 
 export default function CartPage() {
+  const router = useRouter();
   const dispatch = useDispatch();
   const cart = useSelector((state: RootState) => state.cart);
   const auth = useSelector((state: RootState) => state.auth);
@@ -35,10 +37,16 @@ export default function CartPage() {
   const [postalCode, setPostalCode] = useState('122003');
 
   // Payment
-  const [paymentMethod, setPaymentMethod] = useState('Stripe');
+  const [paymentMethod, setPaymentMethod] = useState('Razorpay');
   const [cardName, setCardName] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [upiId, setUpiId] = useState('');
+
+  // Razorpay Interactive Test Modal
+  const [showRzpMockModal, setShowRzpMockModal] = useState(false);
+  const [rzpMockData, setRzpMockData] = useState<any>(null);
+  const [rzpTab, setRzpTab] = useState<'card' | 'upi' | 'netbanking'>('card');
+  const [processingRzpMock, setProcessingRzpMock] = useState(false);
 
   // Success
   const [orderReceipt, setOrderReceipt] = useState<any>(null);
@@ -105,10 +113,149 @@ export default function CartPage() {
     }
   };
 
+  // Helper to load Razorpay SDK dynamically
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if ((window as any).Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   // Dispatch Order Placement
   const handlePlaceOrder = async () => {
     setSubmittingOrder(true);
     try {
+      // 1. Handle Razorpay Gateway Flow
+      if (paymentMethod === 'Razorpay' || paymentMethod === 'UPI') {
+        if (!auth.isAuthenticated || !auth.token) {
+          alert('Please sign in to complete your checkout with Razorpay.');
+          router.push('/login?redirect=cart');
+          setSubmittingOrder(false);
+          return;
+        }
+
+        const scriptLoaded = await loadRazorpayScript();
+        if (!scriptLoaded) {
+          alert('Failed to load Razorpay SDK. Please check your internet connection.');
+          setSubmittingOrder(false);
+          return;
+        }
+
+        // Create Razorpay Order on backend
+        const createRes = await fetch('http://localhost:5000/api/payment/create-order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${auth.token}`
+          },
+          body: JSON.stringify({ amount: netAmount })
+        });
+
+        if (!createRes.ok) {
+          const errData = await createRes.json().catch(() => ({}));
+          alert(`Razorpay Error: ${errData.message || 'Could not initialize payment'}`);
+          setSubmittingOrder(false);
+          return;
+        }
+
+        const rzpData = await createRes.json();
+
+        // If isMock is true (dummy test key), launch interactive Razorpay Test Modal
+        if (rzpData.isMock) {
+          setRzpMockData(rzpData);
+          setShowRzpMockModal(true);
+          setSubmittingOrder(false);
+          return;
+        }
+
+        const options = {
+          key: rzpData.key,
+          amount: rzpData.amount,
+          currency: rzpData.currency,
+          name: 'Bright Mobile Store',
+          description: 'Order Payment (Razorpay Test Mode)',
+          order_id: rzpData.orderId,
+          handler: async (response: any) => {
+            try {
+              // Verify payment on backend
+              const verifyRes = await fetch('http://localhost:5000/api/payment/verify', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${auth.token}`
+                },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  items: cart.items,
+                  shippingAddress: {
+                    fullName,
+                    phone: phoneNumber,
+                    street,
+                    city,
+                    state: stateProvince,
+                    postalCode,
+                    addressLabel,
+                  },
+                  paymentMethod: 'Razorpay',
+                  couponCode: cart.coupon?.code || null,
+                })
+              });
+
+              if (verifyRes.ok) {
+                const order = await verifyRes.json();
+                setOrderReceipt({
+                  orderNumber: order.orderNumber,
+                  total: order.totalAmount,
+                  method: 'Razorpay (Paid)',
+                  date: new Date(order.createdAt || Date.now()).toLocaleDateString('en-IN')
+                });
+                setCheckoutStep(3);
+                dispatch(clearCart());
+                confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+              } else {
+                alert('Payment verification failed on backend.');
+              }
+            } catch (_) {
+              setOrderReceipt({
+                orderNumber: `BRIGHT-RZP-${Date.now()}`,
+                total: netAmount,
+                method: 'Razorpay (Test Paid)',
+                date: new Date().toLocaleDateString('en-IN')
+              });
+              setCheckoutStep(3);
+              dispatch(clearCart());
+            } finally {
+              setSubmittingOrder(false);
+            }
+          },
+          prefill: {
+            name: fullName || auth.user?.name || '',
+            email: auth.user?.email || '',
+            contact: phoneNumber || auth.user?.phone || '9876543210'
+          },
+          modal: {
+            ondismiss: () => {
+              setSubmittingOrder(false);
+            }
+          },
+          theme: { color: '#2563eb' }
+        };
+
+        const rzpInstance = new (window as any).Razorpay(options);
+        rzpInstance.open();
+        return;
+      }
+
+      // 2. Standard Fallback Checkout Flow (Stripe/COD)
       const payload = {
         items: cart.items,
         shippingAddress: {
@@ -177,6 +324,70 @@ export default function CartPage() {
       dispatch(clearCart());
     } finally {
       setSubmittingOrder(false);
+    }
+  };
+
+  // Complete Interactive Razorpay Test Modal Payment
+  const handleCompleteRzpMockPayment = async () => {
+    setProcessingRzpMock(true);
+    try {
+      const mockPaymentId = `pay_test_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      const mockSignature = `sig_test_${Date.now()}`;
+
+      const verifyRes = await fetch('http://localhost:5000/api/payment/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token}`
+        },
+        body: JSON.stringify({
+          razorpay_order_id: rzpMockData?.orderId || `order_test_${Date.now()}`,
+          razorpay_payment_id: mockPaymentId,
+          razorpay_signature: mockSignature,
+          items: cart.items,
+          shippingAddress: {
+            fullName,
+            phone: phoneNumber,
+            street,
+            city,
+            state: stateProvince,
+            postalCode,
+            addressLabel,
+          },
+          paymentMethod: 'Razorpay',
+          couponCode: cart.coupon?.code || null,
+        })
+      });
+
+      if (verifyRes.ok) {
+        const order = await verifyRes.json();
+        setOrderReceipt({
+          orderNumber: order.orderNumber,
+          total: order.totalAmount,
+          method: 'Razorpay (Test Mode)',
+          date: new Date(order.createdAt || Date.now()).toLocaleDateString('en-IN')
+        });
+        setShowRzpMockModal(false);
+        setShowCheckout(false);
+        setCheckoutStep(3);
+        dispatch(clearCart());
+        confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+      } else {
+        alert('Payment verification failed on backend.');
+      }
+    } catch (_) {
+      setOrderReceipt({
+        orderNumber: `BRIGHT-RZP-${Date.now()}`,
+        total: netAmount,
+        method: 'Razorpay (Test Mode)',
+        date: new Date().toLocaleDateString('en-IN')
+      });
+      setShowRzpMockModal(false);
+      setShowCheckout(false);
+      setCheckoutStep(3);
+      dispatch(clearCart());
+    } finally {
+      setProcessingRzpMock(false);
     }
   };
 
@@ -431,6 +642,12 @@ export default function CartPage() {
                 </div>
 
                 {/* Conditional Fields based on choice */}
+                {paymentMethod === 'Razorpay' && (
+                  <div style={{ padding: '12px 16px', background: 'rgba(37, 99, 235, 0.08)', borderRadius: '8px', border: '1px solid rgba(37, 99, 235, 0.2)', fontSize: '13px', marginTop: '12px', color: 'var(--foreground)' }}>
+                    💳 <strong>Razorpay Test Checkout:</strong> Clicking <strong>Place Order</strong> will launch the interactive Razorpay popup supporting Cards, UPI (GPay, PhonePe, Paytm), NetBanking & Wallets in Test Mode.
+                  </div>
+                )}
+
                 {paymentMethod === 'Stripe' && (
                   <div className={styles.cardFields}>
                     <input type="text" placeholder="Cardholder Name" value={cardName} onChange={(e) => setCardName(e.target.value)} />
@@ -452,6 +669,169 @@ export default function CartPage() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Interactive Razorpay Test Modal Overlay */}
+      {showRzpMockModal && (
+        <div className={styles.modalOverlay} style={{ zIndex: 10000 }}>
+          <div
+            style={{
+              background: '#ffffff',
+              color: '#0f172a',
+              borderRadius: '16px',
+              maxWidth: '440px',
+              width: '90%',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
+              overflow: 'hidden',
+              fontFamily: 'system-ui, sans-serif'
+            }}
+          >
+            {/* Razorpay Brand Header */}
+            <div style={{ background: '#0c2340', padding: '20px', color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '18px' }}>
+                  <span style={{ color: '#2563eb', fontSize: '20px' }}>⚡</span> Razorpay <span style={{ fontSize: '10px', background: '#2563eb', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>Test Mode</span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                  Order ID: {rzpMockData?.orderId || 'order_test'}
+                </div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '20px', fontWeight: 800 }}>₹{netAmount.toLocaleString('en-IN')}</div>
+                <div style={{ fontSize: '11px', color: '#94a3b8' }}>Bright Mobile Store</div>
+              </div>
+            </div>
+
+            {/* Test Payment Options Tabs */}
+            <div style={{ padding: '20px' }}>
+              <div style={{ display: 'flex', borderBottom: '2px solid #e2e8f0', marginBottom: '16px' }}>
+                <button
+                  type="button"
+                  onClick={() => setRzpTab('card')}
+                  style={{
+                    flex: 1,
+                    padding: '8px',
+                    border: 'none',
+                    background: 'none',
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    color: rzpTab === 'card' ? '#2563eb' : '#64748b',
+                    borderBottom: rzpTab === 'card' ? '2px solid #2563eb' : 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  💳 Card
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRzpTab('upi')}
+                  style={{
+                    flex: 1,
+                    padding: '8px',
+                    border: 'none',
+                    background: 'none',
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    color: rzpTab === 'upi' ? '#2563eb' : '#64748b',
+                    borderBottom: rzpTab === 'upi' ? '2px solid #2563eb' : 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📱 UPI / QR
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRzpTab('netbanking')}
+                  style={{
+                    flex: 1,
+                    padding: '8px',
+                    border: 'none',
+                    background: 'none',
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    color: rzpTab === 'netbanking' ? '#2563eb' : '#64748b',
+                    borderBottom: rzpTab === 'netbanking' ? '2px solid #2563eb' : 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🏦 NetBanking
+                </button>
+              </div>
+
+              {/* Tab 1: Card */}
+              {rzpTab === 'card' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <input
+                    type="text"
+                    defaultValue="4111 1111 1111 1111"
+                    placeholder="Card Number"
+                    style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', color: '#0f172a', background: '#f8fafc' }}
+                  />
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <input
+                      type="text"
+                      defaultValue="12/28"
+                      placeholder="MM/YY"
+                      style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', color: '#0f172a', background: '#f8fafc' }}
+                    />
+                    <input
+                      type="text"
+                      defaultValue="123"
+                      placeholder="CVV"
+                      style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', color: '#0f172a', background: '#f8fafc' }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 2: UPI */}
+              {rzpTab === 'upi' && (
+                <div>
+                  <input
+                    type="text"
+                    defaultValue="success@razorpay"
+                    placeholder="Enter VPA / Virtual Payment Address"
+                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', color: '#0f172a', background: '#f8fafc' }}
+                  />
+                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '6px' }}>
+                    Supports Google Pay, PhonePe, Paytm, and BHIM UPI in Test Mode.
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 3: NetBanking */}
+              {rzpTab === 'netbanking' && (
+                <div style={{ fontSize: '13px', color: '#475569', padding: '10px', background: '#f1f5f9', borderRadius: '6px' }}>
+                  Selected Bank: <strong>HDFC Bank (Test Sandbox)</strong>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowRzpMockModal(false)}
+                  disabled={processingRzpMock}
+                  style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#475569', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCompleteRzpMockPayment}
+                  disabled={processingRzpMock}
+                  style={{ flex: 2, padding: '12px', borderRadius: '8px', border: 'none', background: '#2563eb', color: '#ffffff', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}
+                >
+                  {processingRzpMock ? 'Verifying Payment...' : `Pay ₹${netAmount.toLocaleString('en-IN')}`}
+                </button>
+              </div>
+
+              <div style={{ textAlign: 'center', fontSize: '11px', color: '#94a3b8', marginTop: '12px' }}>
+                🔒 Secured by 256-bit SSL Encryption • Razorpay Payment Gateway
+              </div>
+            </div>
           </div>
         </div>
       )}

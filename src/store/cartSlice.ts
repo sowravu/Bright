@@ -34,7 +34,24 @@ const initialState: CartState = {
 
 const saveCartToStorage = (items: CartItem[]) => {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('bright_cart', JSON.stringify(items));
+    try {
+      // Strip large base64 data URLs to prevent exceeding localStorage quota (5MB)
+      const sanitizedItems = items.map((item) => {
+        if (item.image && (item.image.startsWith('data:') || item.image.length > 2000)) {
+          return { ...item, image: '' };
+        }
+        return item;
+      });
+      localStorage.setItem('bright_cart', JSON.stringify(sanitizedItems));
+    } catch (error) {
+      console.warn('Failed to save cart to localStorage (QuotaExceededError):', error);
+      try {
+        const minimalItems = items.map((item) => ({ ...item, image: '' }));
+        localStorage.setItem('bright_cart', JSON.stringify(minimalItems));
+      } catch (_) {
+        // Storage full or restricted; safely swallow error to prevent app crash
+      }
+    }
   }
 };
 

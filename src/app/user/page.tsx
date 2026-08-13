@@ -93,13 +93,19 @@ export default function UserDashboard() {
             const addrs = await addrRes.json();
             setAddresses(addrs);
           }
-        } catch (_) {}
 
-        // Populate order history
-        setOrders([
-          { orderNumber: 'MOB-987654321', totalAmount: 84999, status: 'DELIVERED', createdAt: '2026-07-01', item: 'iPhone 15 Pro Silicone Case + 20W Charger' },
-          { orderNumber: 'ACC-123456789', totalAmount: 4999, status: 'IN_TRANSIT', createdAt: '2026-07-18', item: 'Anker 65W GaN Fast Charger' }
-        ]);
+          const ordersRes = await fetch('http://localhost:5000/api/orders/my-orders', {
+            headers: { 'Authorization': `Bearer ${auth.token}` }
+          });
+          if (ordersRes.ok) {
+            const userOrders = await ordersRes.json();
+            setOrders(userOrders);
+          } else {
+            setOrders([]);
+          }
+        } catch (_) {
+          setOrders([]);
+        }
       };
       fetchUserData();
     }
@@ -303,6 +309,33 @@ export default function UserDashboard() {
     }
   };
 
+  // Cancel Order Handler
+  const handleCancelOrder = async (orderId: string, orderNumber: string) => {
+    if (!window.confirm(`Are you sure you want to cancel order ${orderNumber}?`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`http://localhost:5000/api/orders/${orderId}/cancel`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token}`
+        }
+      });
+      if (res.ok) {
+        setOrders((prev) =>
+          prev.map((o) => (o._id === orderId || o.id === orderId ? { ...o, orderStatus: 'Cancelled' } : o))
+        );
+        showToast(`Order ${orderNumber} has been cancelled successfully.`, 'info');
+      } else {
+        const err = await res.json();
+        showToast(err.message || 'Failed to cancel order', 'error');
+      }
+    } catch (_) {
+      showToast('Error sending cancellation request', 'error');
+    }
+  };
+
   const handleLogout = () => {
     dispatch(logout());
     showToast('Logged out successfully!', 'info');
@@ -457,38 +490,112 @@ export default function UserDashboard() {
           {activeTab === 'orders' && (
             <div className={styles.tabContent}>
               <h2>Purchased Orders & Warranty</h2>
-              <p className={styles.tabSubheading}>Track your shipment, download invoices, or claim warranty for devices and accessories.</p>
+              <p className={styles.tabSubheading}>Track your shipment, download invoices, cancel active orders, or check delivery details.</p>
 
               {orders.length === 0 ? (
-                <p>No past orders found.</p>
+                <div style={{ textAlign: 'center', padding: '40px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px dashed var(--border-color)' }}>
+                  <Box size={36} style={{ color: 'var(--foreground-secondary)', marginBottom: '8px' }} />
+                  <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--foreground-secondary)', margin: 0 }}>No past orders found in database.</p>
+                </div>
               ) : (
                 <div className={styles.ordersList}>
-                  {orders.map((o, idx) => (
-                    <div key={idx} className={styles.orderCard}>
-                      <div className={styles.orderHead}>
-                        <span>Order ID: {o.orderNumber}</span>
-                        <span className={styles.statusBadge}>{o.status}</span>
-                      </div>
-                      <div className={styles.orderBody}>
-                        <div>
-                          <span>Placed on: {o.createdAt ? new Date(o.createdAt).toLocaleDateString() : 'Recent'}</span>
-                          <strong>₹{parseFloat(o.totalAmount || o.netAmount || 84999).toLocaleString()}</strong>
+                  {orders.map((o, idx) => {
+                    const status = o.orderStatus || o.status || 'Processing';
+                    const canCancel = status !== 'Delivered' && status !== 'Cancelled';
+                    const statusColorMap: Record<string, { bg: string; color: string }> = {
+                      Processing: { bg: 'rgba(234, 179, 8, 0.1)', color: '#d97706' },
+                      Confirmed: { bg: 'rgba(59, 130, 246, 0.1)', color: '#2563eb' },
+                      Shipped: { bg: 'rgba(168, 85, 247, 0.1)', color: '#9333ea' },
+                      'Out for Delivery': { bg: 'rgba(249, 115, 22, 0.1)', color: '#ea580c' },
+                      Delivered: { bg: 'rgba(34, 197, 94, 0.1)', color: '#16a34a' },
+                      Cancelled: { bg: 'rgba(239, 68, 68, 0.1)', color: '#dc2626' },
+                    };
+                    const statusStyle = statusColorMap[status] || { bg: 'rgba(100, 116, 139, 0.1)', color: '#475569' };
+
+                    return (
+                      <div key={o._id || o.id || idx} className={styles.orderCard}>
+                        <div className={styles.orderHead}>
+                          <div>
+                            <span style={{ fontWeight: 700, fontSize: '15px' }}>{o.orderNumber}</span>
+                            <div style={{ fontSize: '12px', color: 'var(--foreground-secondary)', marginTop: '2px' }}>
+                              Payment Method: <strong>{o.paymentMethod || 'Razorpay'}</strong> ({o.paymentStatus || 'Paid'})
+                            </div>
+                          </div>
+                          <span
+                            className={styles.statusBadge}
+                            style={{ background: statusStyle.bg, color: statusStyle.color, border: `1px solid ${statusStyle.color}40`, fontWeight: 700, padding: '4px 10px', borderRadius: '12px', fontSize: '12px' }}
+                          >
+                            ● {status.toUpperCase()}
+                          </span>
+                        </div>
+
+                        <div className={styles.orderBody}>
+                          <div style={{ width: '100%' }}>
+                            <div style={{ fontSize: '13px', marginBottom: '8px' }}>
+                              <span>Placed on: </span>
+                              <strong>{o.createdAt ? new Date(o.createdAt).toLocaleString('en-IN') : 'Recent'}</strong>
+                            </div>
+
+                            {/* Ordered Items List */}
+                            {o.items && o.items.length > 0 && (
+                              <div style={{ background: 'var(--bg-secondary)', borderRadius: '6px', padding: '10px 12px', margin: '8px 0', border: '1px solid var(--border-color)' }}>
+                                {o.items.map((item: any, iIdx: number) => (
+                                  <div key={iIdx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', padding: '4px 0', borderBottom: iIdx === o.items.length - 1 ? 'none' : '1px dashed var(--border-color)' }}>
+                                    <span>{item.name} {item.ram ? `(${item.ram}/${item.storage})` : ''} x {item.quantity}</span>
+                                    <strong>₹{(item.price * item.quantity).toLocaleString('en-IN')}</strong>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Delivery Information */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+                              <div style={{ fontSize: '13px' }}>
+                                {status === 'Delivered' ? (
+                                  <span style={{ color: 'var(--success)', fontWeight: 600 }}>
+                                    ✅ Delivered at: {o.deliveredAt ? new Date(o.deliveredAt).toLocaleString('en-IN') : 'Completed'}
+                                  </span>
+                                ) : status === 'Cancelled' ? (
+                                  <span style={{ color: 'var(--error)', fontWeight: 600 }}>❌ Order Cancelled</span>
+                                ) : (
+                                  <span style={{ color: 'var(--primary)', fontWeight: 600 }}>
+                                    🚚 Estimated Delivery: {o.estimatedDeliveryDate || 'Within 2-4 business days'}
+                                  </span>
+                                )}
+                              </div>
+                              <div style={{ fontSize: '16px', fontWeight: 800 }}>
+                                Total: ₹{(o.totalAmount || o.netAmount || 0).toLocaleString('en-IN')}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className={styles.orderActions}>
+                          <button onClick={() => showToast(`Invoice for ${o.orderNumber} downloaded!`, 'success')} className={styles.btnActionOutline}>
+                            <FileText size={14} /> Download Invoice
+                          </button>
+                          <button onClick={() => showToast(`Tracking update for ${o.orderNumber}: Package status is ${status}`, 'info')} className={styles.btnActionOutline}>
+                            <ExternalLink size={14} /> Track Package
+                          </button>
+
+                          {/* Cancel Order Action */}
+                          {canCancel ? (
+                            <button
+                              onClick={() => handleCancelOrder(o._id || o.id, o.orderNumber)}
+                              className={styles.btnCancel}
+                              style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 700 }}
+                            >
+                              <Trash2 size={14} /> Cancel Order
+                            </button>
+                          ) : (
+                            <span style={{ fontSize: '12px', color: 'var(--foreground-secondary)', fontStyle: 'italic', alignSelf: 'center' }}>
+                              {status === 'Delivered' ? 'Completed' : 'Cancelled'}
+                            </span>
+                          )}
                         </div>
                       </div>
-
-                      <div className={styles.orderActions}>
-                        <button onClick={() => showToast(`Invoice for ${o.orderNumber} downloaded!`, 'success')} className={styles.btnActionOutline}>
-                          <FileText size={14} /> Download Invoice
-                        </button>
-                        <button onClick={() => showToast(`Tracking details sent to ${auth.user?.email}`, 'info')} className={styles.btnActionOutline}>
-                          <ExternalLink size={14} /> Track Package
-                        </button>
-                        <button onClick={() => showToast(`IMEI Warranty active until 2027 for ${o.orderNumber}`, 'info')} className={styles.btnActionOutline}>
-                          <ShieldCheck size={14} /> Warranty Check
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

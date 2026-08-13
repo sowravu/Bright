@@ -103,8 +103,74 @@ const getAnalytics = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Get all customer orders for Admin portal
+ * @route   GET /api/admin/orders
+ * @access  Private/Admin
+ */
+const getAllOrders = async (req, res, next) => {
+  try {
+    const Order = require('../models/Order');
+    const orders = await Order.find({})
+      .populate('user', 'name email phone')
+      .sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Update order fulfillment status and delivery date/time
+ * @route   PUT /api/admin/orders/:orderId/status
+ * @access  Private/Admin
+ */
+const updateOrderStatus = async (req, res, next) => {
+  try {
+    const Order = require('../models/Order');
+    const { restoreStockForOrder } = require('../utils/stockManager');
+    const { orderStatus, estimatedDeliveryDate, deliveredAt } = req.body;
+    const { orderId } = req.params;
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    const previousStatus = order.orderStatus;
+
+    if (orderStatus) {
+      order.orderStatus = orderStatus;
+      if (orderStatus === 'Delivered') {
+        order.deliveredAt = deliveredAt ? new Date(deliveredAt) : new Date();
+      }
+    }
+
+    if (estimatedDeliveryDate !== undefined) {
+      order.estimatedDeliveryDate = estimatedDeliveryDate;
+    }
+
+    if (deliveredAt !== undefined && orderStatus !== 'Delivered') {
+      order.deliveredAt = deliveredAt ? new Date(deliveredAt) : null;
+    }
+
+    await order.save();
+
+    // If admin set status to Cancelled from an active status, restore inventory stock
+    if (orderStatus === 'Cancelled' && previousStatus !== 'Cancelled' && order.items && order.items.length > 0) {
+      await restoreStockForOrder(order.items);
+    }
+
+    res.json({ message: 'Order status updated successfully', order });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getUsers,
   toggleUserBlock,
   getAnalytics,
+  getAllOrders,
+  updateOrderStatus,
 };

@@ -50,22 +50,26 @@ const bannerSlice = createSlice({
       Object.assign(state, action.payload);
       state.hydrated = true;
       if (typeof window !== 'undefined') {
-        const currentStored = {
-          title: state.title,
-          description: state.description,
-          badge: state.badge,
-          image: state.image,
-          ctaText: state.ctaText,
-          ctaLink: state.ctaLink,
-          buttonColor: state.buttonColor,
-          buttonTextColor: state.buttonTextColor,
-          secondaryCtaText: state.secondaryCtaText,
-          secondaryCtaLink: state.secondaryCtaLink,
-          showSecondaryBtn: state.showSecondaryBtn,
-          templateName: state.templateName,
-          isActive: state.isActive,
-        };
-        localStorage.setItem('bright_banner', JSON.stringify(currentStored));
+        try {
+          const currentStored = {
+            title: state.title,
+            description: state.description,
+            badge: state.badge,
+            image: state.image && (state.image.startsWith('data:') || state.image.length > 2000) ? '' : state.image,
+            ctaText: state.ctaText,
+            ctaLink: state.ctaLink,
+            buttonColor: state.buttonColor,
+            buttonTextColor: state.buttonTextColor,
+            secondaryCtaText: state.secondaryCtaText,
+            secondaryCtaLink: state.secondaryCtaLink,
+            showSecondaryBtn: state.showSecondaryBtn,
+            templateName: state.templateName,
+            isActive: state.isActive,
+          };
+          localStorage.setItem('bright_banner', JSON.stringify(currentStored));
+        } catch (error) {
+          console.warn('Failed to save banner to localStorage:', error);
+        }
       }
     },
     resetBannerState(state) {

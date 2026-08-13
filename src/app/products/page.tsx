@@ -180,7 +180,7 @@ function ProductsCatalog() {
   const handleAddToCart = (prod: any) => {
     dispatch(
       addToCart({
-        productId: prod.id,
+        productId: prod._id || prod.id,
         name: prod.name,
         image: prod.images[0],
         brand: prod.brand?.name || 'Smart',
