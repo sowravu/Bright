@@ -33,9 +33,14 @@ const addToCart = async (req, res, next) => {
       cart = new Cart({ user: req.user._id, items: [] });
     }
 
-    const existingIndex = cart.items.findIndex(
-      (i) => String(i.productId) === String(productId) && i.variantId === (variantId || '')
-    );
+    const existingIndex = cart.items.findIndex((i) => {
+      if (String(i.productId) !== String(productId)) return false;
+      if (variantId && i.variantId) return String(i.variantId) === String(variantId);
+      const sameColor = (i.color || '').trim().toLowerCase() === (color || '').trim().toLowerCase();
+      const sameRam = (i.ram || '').trim().toLowerCase() === (ram || '').trim().toLowerCase();
+      const sameStorage = (i.storage || '').trim().toLowerCase() === (storage || '').trim().toLowerCase();
+      return sameColor && sameRam && sameStorage;
+    });
 
     if (existingIndex > -1) {
       cart.items[existingIndex].quantity += Number(quantity || 1);

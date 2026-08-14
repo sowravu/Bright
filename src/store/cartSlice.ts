@@ -60,10 +60,15 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     addToCart(state, action: PayloadAction<CartItem>) {
-      const { productId, variantId, quantity } = action.payload;
-      const existing = state.items.find(
-        (i) => i.productId === productId && i.variantId === variantId
-      );
+      const { productId, variantId, color, ram, storage, quantity } = action.payload;
+      const existing = state.items.find((i) => {
+        if (i.productId !== productId) return false;
+        if (variantId && i.variantId) return i.variantId === variantId;
+        const sameColor = (i.color || '').trim().toLowerCase() === (color || '').trim().toLowerCase();
+        const sameRam = (i.ram || '').trim().toLowerCase() === (ram || '').trim().toLowerCase();
+        const sameStorage = (i.storage || '').trim().toLowerCase() === (storage || '').trim().toLowerCase();
+        return sameColor && sameRam && sameStorage;
+      });
 
       if (existing) {
         existing.quantity += quantity;
@@ -72,21 +77,27 @@ const cartSlice = createSlice({
       }
       saveCartToStorage(state.items);
     },
-    updateQuantity(state, action: PayloadAction<{ productId: string; variantId?: string; quantity: number }>) {
-      const { productId, variantId, quantity } = action.payload;
-      const item = state.items.find(
-        (i) => i.productId === productId && i.variantId === variantId
-      );
+    updateQuantity(state, action: PayloadAction<{ productId: string; variantId?: string; color?: string; quantity: number }>) {
+      const { productId, variantId, color, quantity } = action.payload;
+      const item = state.items.find((i) => {
+        if (i.productId !== productId) return false;
+        if (variantId && i.variantId) return i.variantId === variantId;
+        if (color && i.color) return i.color.trim().toLowerCase() === color.trim().toLowerCase();
+        return true;
+      });
       if (item) {
         item.quantity = quantity;
       }
       saveCartToStorage(state.items);
     },
-    removeFromCart(state, action: PayloadAction<{ productId: string; variantId?: string }>) {
-      const { productId, variantId } = action.payload;
-      state.items = state.items.filter(
-        (i) => !(i.productId === productId && i.variantId === variantId)
-      );
+    removeFromCart(state, action: PayloadAction<{ productId: string; variantId?: string; color?: string }>) {
+      const { productId, variantId, color } = action.payload;
+      state.items = state.items.filter((i) => {
+        if (i.productId !== productId) return true;
+        if (variantId && i.variantId) return i.variantId !== variantId;
+        if (color && i.color) return i.color.trim().toLowerCase() !== color.trim().toLowerCase();
+        return false;
+      });
       saveCartToStorage(state.items);
     },
     applyCoupon(state, action: PayloadAction<Coupon | null>) {

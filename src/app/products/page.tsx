@@ -178,16 +178,30 @@ function ProductsCatalog() {
 
   // Add to cart helper
   const handleAddToCart = (prod: any) => {
+    let variantId = '';
+    let selectedColor = 'Default Color';
+    let selectedRam = prod.specs?.ram || '8GB';
+    let selectedStorage = prod.specs?.storage || '128GB';
+
+    if (prod.variants && prod.variants.length > 0) {
+      const firstVar = prod.variants[0];
+      variantId = firstVar._id || firstVar.id || '';
+      if (firstVar.color) selectedColor = firstVar.color;
+      if (firstVar.ram) selectedRam = firstVar.ram;
+      if (firstVar.storage) selectedStorage = firstVar.storage;
+    }
+
     dispatch(
       addToCart({
         productId: prod._id || prod.id,
+        variantId,
         name: prod.name,
-        image: prod.images[0],
+        image: prod.images?.[0] || '',
         brand: prod.brand?.name || 'Smart',
-        ram: prod.specs?.ram || '8GB',
-        storage: prod.specs?.storage || '128GB',
-        color: 'Default Color',
-        price: prod.discountPrice || prod.basePrice,
+        ram: selectedRam,
+        storage: selectedStorage,
+        color: selectedColor,
+        price: prod.discountPrice || prod.basePrice || prod.price || 0,
         quantity: 1
       })
     );

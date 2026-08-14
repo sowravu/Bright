@@ -143,15 +143,20 @@ function AccessoriesCatalog() {
   // Add to cart helper
   const handleAddToCart = (prod: any) => {
     const itemPrice = prod.discountPrice || prod.basePrice || prod.price || 0;
+    let variantId = '';
+    if (prod.variants && prod.variants.length > 0) {
+      variantId = prod.variants[0]._id || prod.variants[0].id || '';
+    }
     dispatch(
       addToCart({
         productId: prod.id || prod._id,
+        variantId,
         name: prod.name,
         image: prod.images?.[0] || '',
         brand: prod.brand?.name || (typeof prod.brand === 'string' ? prod.brand : 'Smart'),
         ram: 'N/A',
         storage: 'N/A',
-        color: prod.colors?.[0] || 'Default',
+        color: prod.colors?.[0] || prod.variants?.[0]?.color || 'Default',
         price: itemPrice,
         quantity: 1
       })

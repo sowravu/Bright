@@ -31,11 +31,10 @@ export function AuthPortal({ initialRegister = false }: { initialRegister?: bool
   // If user is already authenticated when visiting /login or /signup
   useEffect(() => {
     if (authState.hydrated && authState.isAuthenticated && authState.user) {
-      if (authState.user.role === 'ADMIN') {
-        router.push(redirectPath || '/admin');
-      } else if (redirectPath) {
-        router.push(redirectPath);
-      }
+      const target = (redirectPath && redirectPath !== '/login' && redirectPath !== '/signup')
+        ? redirectPath
+        : (authState.user.role === 'ADMIN' ? '/admin' : '/');
+      router.push(target);
     }
   }, [authState.hydrated, authState.isAuthenticated, authState.user, router, redirectPath]);
 

@@ -515,16 +515,44 @@ export default function ProductDetails() {
   const handleCartAdd = (redirect: boolean) => {
     if (!product) return;
 
-    // 1. Add Main Phone Variant
+    // Find the exact matching variant ID
+    let activeVariantId = '';
+    if (product.variants && product.variants.length > 0) {
+      let matched: any = null;
+      if (isAccessory) {
+        matched = product.variants.find(
+          (v: any) => v.color && selectedColor && v.color.toLowerCase() === selectedColor.toLowerCase()
+        ) || product.variants[0];
+      } else {
+        matched = product.variants.find(
+          (v: any) =>
+            (!v.color || !selectedColor || v.color.toLowerCase() === selectedColor.toLowerCase()) &&
+            (!selectedRam || !v.ram || v.ram === selectedRam) &&
+            (!selectedStorage || !v.storage || v.storage === selectedStorage)
+        ) || product.variants.find(
+          (v: any) => v.color && selectedColor && v.color.toLowerCase() === selectedColor.toLowerCase()
+        ) || product.variants[0];
+      }
+      if (matched) {
+        activeVariantId = matched._id || matched.id || '';
+      }
+    }
+
+    const itemName = isAccessory
+      ? `${product.name}${selectedColor ? ` (${selectedColor})` : ''}`
+      : `${product.name}${selectedRam || selectedStorage ? ` (${selectedRam}${selectedStorage ? `/${selectedStorage}` : ''})` : ''}`;
+
+    // 1. Add Main Phone / Accessory Variant
     dispatch(
       addToCart({
         productId: product._id || product.id,
-        name: `${product.name} (${selectedRam}/${selectedStorage})`,
-        image: product.images[0],
-        brand: product.brand?.name || 'Smart',
-        ram: selectedRam,
-        storage: selectedStorage,
-        color: selectedColor,
+        variantId: activeVariantId,
+        name: itemName,
+        image: colorImageOverride || product.images?.[0] || '',
+        brand: product.brand?.name || (typeof product.brand === 'string' ? product.brand : 'Smart'),
+        ram: selectedRam || '',
+        storage: selectedStorage || '',
+        color: selectedColor || '',
         price: selectedPrice,
         quantity: 1
       })
