@@ -12,12 +12,14 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import styles from './cart.module.css';
+import { useToast } from '../../context/ToastContext';
 
 export default function CartPage() {
   const router = useRouter();
   const dispatch = useDispatch();
   const cart = useSelector((state: RootState) => state.cart);
   const auth = useSelector((state: RootState) => state.auth);
+  const { showToast } = useToast();
 
   // Coupon
   const [couponCode, setCouponCode] = useState('');
@@ -291,37 +293,26 @@ export default function CartPage() {
             method: order.paymentMethod,
             date: new Date(order.createdAt || Date.now()).toLocaleDateString()
           };
+          setOrderReceipt(receiptData);
+          setCheckoutStep(3);
+          dispatch(clearCart());
+          confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+          return;
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          showToast(errData.message || 'Checkout failed due to insufficient inventory stock.', 'error');
+          setSubmittingOrder(false);
+          return;
         }
       }
 
       if (!receiptData) {
-        receiptData = {
-          orderNumber: `BRIGHT-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-          total: netAmount,
-          method: paymentMethod,
-          date: new Date().toLocaleDateString()
-        };
+        showToast('Please sign in to place an order.', 'error');
+        setSubmittingOrder(false);
+        return;
       }
-
-      setOrderReceipt(receiptData);
-      setCheckoutStep(3);
-      dispatch(clearCart());
-
-      confetti({
-        particleCount: 150,
-        spread: 80,
-        origin: { y: 0.6 }
-      });
-    } catch (_) {
-      const fallbackReceipt = {
-        orderNumber: `BRIGHT-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-        total: netAmount,
-        method: paymentMethod,
-        date: new Date().toLocaleDateString()
-      };
-      setOrderReceipt(fallbackReceipt);
-      setCheckoutStep(3);
-      dispatch(clearCart());
+    } catch (err: any) {
+      showToast(err?.message || 'Network error processing checkout.', 'error');
     } finally {
       setSubmittingOrder(false);
     }
@@ -373,19 +364,11 @@ export default function CartPage() {
         dispatch(clearCart());
         confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
       } else {
-        alert('Payment verification failed on backend.');
+        const errData = await verifyRes.json().catch(() => ({}));
+        showToast(errData.message || 'Payment verification failed on backend: Out of stock.', 'error');
       }
-    } catch (_) {
-      setOrderReceipt({
-        orderNumber: `BRIGHT-RZP-${Date.now()}`,
-        total: netAmount,
-        method: 'Razorpay (Test Mode)',
-        date: new Date().toLocaleDateString('en-IN')
-      });
-      setShowRzpMockModal(false);
-      setShowCheckout(false);
-      setCheckoutStep(3);
-      dispatch(clearCart());
+    } catch (err: any) {
+      showToast(err?.message || 'Error processing payment.', 'error');
     } finally {
       setProcessingRzpMock(false);
     }

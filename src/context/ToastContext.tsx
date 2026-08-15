@@ -51,17 +51,17 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      {/* Toast Render Overlay */}
+      {/* Toast Render Overlay - zIndex 2147483647 ensures toasts float sharply above all modal overlays */}
       <div
         style={{
           position: 'fixed',
           top: '24px',
           right: '24px',
-          zIndex: 9999,
+          zIndex: 2147483647,
           display: 'flex',
           flexDirection: 'column',
           gap: '12px',
-          maxWidth: '380px',
+          maxWidth: '420px',
           width: 'calc(100% - 48px)',
           pointerEvents: 'none'
         }}
@@ -76,11 +76,11 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
               gap: '12px',
               padding: '16px',
               borderRadius: '12px',
-              background: 'rgba(15, 23, 42, 0.95)',
+              background: toast.type === 'error' ? 'rgba(30, 10, 15, 0.96)' : 'rgba(15, 23, 42, 0.95)',
               backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: toast.type === 'error' ? '1.5px solid #ef4444' : '1px solid rgba(255, 255, 255, 0.1)',
               color: '#FFFFFF',
-              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.25)',
+              boxShadow: toast.type === 'error' ? '0 10px 30px rgba(239, 68, 68, 0.35)' : '0 10px 30px rgba(0, 0, 0, 0.25)',
               pointerEvents: 'auto',
               animation: 'slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
               fontFamily: 'var(--font-body), sans-serif',
