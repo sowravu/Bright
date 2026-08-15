@@ -23,7 +23,7 @@ export default function RootLayout({
         <StoreProvider>
           <ToastProvider>
             <Navbar />
-            <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <main style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: '80px' }}>
               {children}
             </main>
             <AIChatBot />

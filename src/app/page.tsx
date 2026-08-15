@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
-import { Sparkles, ArrowRight, Shield, Award, Zap, ChevronDown, CheckCircle, Smartphone } from 'lucide-react';
+import { Sparkles, ArrowRight, Zap, Smartphone, ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function Home() {
@@ -14,6 +14,10 @@ export default function Home() {
 
   // Flash Deals Countdown Timer
   const [timeLeft, setTimeLeft] = useState({ hours: 4, minutes: 34, seconds: 12 });
+
+  // Available Brands State & Horizontal Scroll Ref
+  const [brands, setBrands] = useState<any[]>([]);
+  const brandsScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -28,73 +32,68 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  // AI Phone Finder Wizard State
-  const [finderStep, setFinderStep] = useState(1);
-  const [finderAnswers, setFinderAnswers] = useState({ budget: 0, priority: '', brand: '' });
-  const [finderResult, setFinderResult] = useState<any>(null);
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/brands');
+        if (res.ok) {
+          const data = await res.json();
+          const bList = data.brands || (Array.isArray(data) ? data : []);
+          if (bList.length > 0) {
+            setBrands(bList);
+          }
+        }
+      } catch (_) {}
+    };
+    fetchBrands();
+  }, []);
 
-  // Interactive Exchange Calculator State
-  const [exchangeBrand, setExchangeBrand] = useState('Apple');
-  const [exchangeCond, setExchangeCond] = useState('Excellent');
-  const [exchangeOrigVal, setExchangeOrigVal] = useState('50000');
-  const [exchangeResult, setExchangeResult] = useState<number | null>(null);
+  const scrollBrands = (direction: 'left' | 'right') => {
+    if (brandsScrollRef.current) {
+      const scrollAmount = 320;
+      brandsScrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
 
-  // Interactive EMI Calculator State
-  const [emiPrincipal, setEmiPrincipal] = useState('19999');
-  const [emiMonths, setEmiMonths] = useState(6);
-  const [emiResult, setEmiResult] = useState<number | null>(null);
+  const defaultBrands = [
+    { name: 'Samsung', tagline: 'Galaxy AI, Foldables & Titanium Ultra', logo: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?q=80&w=200' },
+    { name: 'Apple', tagline: 'iPhone 15 Pro, Bionic & iOS Ecosystem', logo: 'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?q=80&w=200' },
+    { name: 'Vivo', tagline: 'Portrait Masters & ZEISS Optics', logo: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=200' },
+    { name: 'Lava', tagline: 'Proudly Indian Agni & Blaze 5G', logo: 'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?q=80&w=200' },
+    { name: 'Nothing', tagline: 'Glyph Matrix & Clean Nothing OS', logo: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=200' },
+    { name: 'Xiaomi', tagline: 'Leica Cameras & HyperOS Power', logo: 'https://images.unsplash.com/photo-1580910051074-3eb694886505?q=80&w=200' },
+    { name: 'OnePlus', tagline: 'Never Settle - 100W Charging', logo: 'https://images.unsplash.com/photo-1546054454-aa26e2b734c7?q=80&w=200' },
+  ];
 
-  // FAQ Active Index
-  const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const brandThemes: Record<string, { glow: string; color: string }> = {
+    samsung: { glow: 'rgba(37, 99, 235, 0.35)', color: '#2563eb' },
+    apple: { glow: 'rgba(148, 163, 184, 0.4)', color: '#475569' },
+    vivo: { glow: 'rgba(6, 182, 212, 0.35)', color: '#0891b2' },
+    lava: { glow: 'rgba(239, 68, 68, 0.35)', color: '#dc2626' },
+    nothing: { glow: 'rgba(15, 23, 42, 0.3)', color: '#0f172a' },
+    xiaomi: { glow: 'rgba(249, 115, 22, 0.35)', color: '#ea580c' },
+    oneplus: { glow: 'rgba(220, 38, 38, 0.35)', color: '#b91c1c' },
+  };
+
+  const displayBrands = brands.length > 0 
+    ? brands.map((b: any) => {
+        const name = b.name || 'Brand';
+        const def = defaultBrands.find((d) => d.name.toLowerCase() === name.toLowerCase());
+        return {
+          _id: b._id || b.id,
+          name: b.name,
+          logo: b.logo || def?.logo || '',
+          description: b.description || def?.tagline || 'Official Brand Warranty & Certified Inventory',
+        };
+      })
+    : defaultBrands;
 
   // Featured flagship product or first product in real catalog
   const heroProduct = productsCatalog.find((p: any) => p.isFeatured || p.category === 'smartphones') || productsCatalog[0];
   const dealProducts = productsCatalog.slice(0, 3);
-
-  const handleFinderSubmit = () => {
-    if (productsCatalog.length === 0) {
-      setFinderResult({
-        name: 'Explore Our Catalog',
-        brand: 'Bright',
-        discountPrice: 0,
-        slug: '',
-        features: 'All Features',
-        images: []
-      });
-      setFinderStep(4);
-      return;
-    }
-
-    let recommendation = productsCatalog[0];
-
-    const matchByBudget = productsCatalog.filter((p: any) => (p.discountPrice || p.basePrice) <= (finderAnswers.budget || 100000));
-    if (matchByBudget.length > 0) {
-      recommendation = matchByBudget[0];
-    }
-
-    setFinderResult(recommendation);
-    setFinderStep(4);
-  };
-
-  const calculateExchange = () => {
-    const base = parseFloat(exchangeOrigVal) || 0;
-    let multiplier = 0.22;
-    if (exchangeCond === 'Excellent') multiplier = 0.45;
-    else if (exchangeCond === 'Good') multiplier = 0.35;
-    
-    let bonus = 1.0;
-    if (exchangeBrand === 'Apple') bonus = 1.15;
-    else if (exchangeBrand === 'Samsung') bonus = 1.05;
-
-    setExchangeResult(Math.round(base * multiplier * bonus));
-  };
-
-  const calculateEMI = () => {
-    const p = parseFloat(emiPrincipal) || 0;
-    const rate = 14 / 12 / 100; // 14% annual interest
-    const emi = (p * rate * Math.pow(1 + rate, emiMonths)) / (Math.pow(1 + rate, emiMonths) - 1);
-    setEmiResult(Math.round(emi));
-  };
 
   const bannerTitle = bannerState?.title || (heroProduct ? heroProduct.name : 'Welcome to Bright Mobile');
   const bannerDesc = bannerState?.description || (heroProduct
@@ -169,7 +168,101 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 2. Flash Deals & Promotions */}
+      {/* 2. Available Brands Single Line Trend Carousel */}
+      <section className={styles.brandsSection}>
+        <div className={styles.brandsHeader}>
+          <div>
+            <h2>Explore Available Brands</h2>
+            <p>Shop official smartphones & certified accessories by your favorite brand ecosystem</p>
+          </div>
+
+          <div className={styles.headerControls}>
+            <div className={styles.scrollNavBtns}>
+              <button
+                onClick={() => scrollBrands('left')}
+                aria-label="Scroll left"
+                className={styles.scrollNavBtn}
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button
+                onClick={() => scrollBrands('right')}
+                aria-label="Scroll right"
+                className={styles.scrollNavBtn}
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+
+            <Link href="/products" className="btn btnSecondary" style={{ fontSize: '13px' }}>
+              View All <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+
+        <div ref={brandsScrollRef} className={styles.brandsCarousel}>
+          {displayBrands.map((b: any, idx: number) => {
+            const brandName = typeof b === 'string' ? b : (b.name || 'Brand');
+            const count = productsCatalog.filter((p: any) => {
+              const pBrand = typeof p.brand === 'string' ? p.brand : (p.brand?.name || '');
+              return pBrand.toLowerCase() === brandName.toLowerCase();
+            }).length;
+
+            const bKey = brandName.toLowerCase();
+            const theme = brandThemes[bKey] || { glow: 'rgba(37, 99, 235, 0.3)', color: '#2563eb' };
+
+            return (
+              <Link
+                key={b._id || b.id || idx}
+                href={`/products?brand=${encodeURIComponent(brandName)}`}
+                className={styles.brandCard}
+                style={{
+                  '--brand-glow': theme.glow,
+                  '--brand-color': theme.color,
+                } as React.CSSProperties}
+              >
+                <div className={styles.brandAvatarRing}>
+                  {b.logo ? (
+                    <img 
+                      src={b.logo} 
+                      alt={brandName} 
+                      className={styles.brandLogo} 
+                      onError={(e) => {
+                        const initials = brandName.substring(0, 2).toUpperCase();
+                        e.currentTarget.src = `data:image/svg+xml;utf8,${encodeURIComponent(
+                          `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" rx="40" fill="#2563eb"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-weight="900" font-size="70" fill="#fff">${initials}</text></svg>`
+                        )}`;
+                      }}
+                    />
+                  ) : (
+                    <div className={styles.brandIconFallback}>
+                      {brandName.substring(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+
+                <h3 className={styles.brandName}>{brandName}</h3>
+                <p className={styles.brandTagline}>
+                  {b.description || b.tagline || 'Official Brand Warranty & Certified Inventory'}
+                </p>
+
+                <div className={styles.brandFooterRow}>
+                  <span className={styles.brandBadge}>
+                    <span className={styles.dotLive} />
+                    {count > 0 ? `${count} ${count === 1 ? 'Model' : 'Models'}` : 'Catalog Ready'}
+                  </span>
+
+                  <span className={styles.exploreArrow}>
+                    Explore <ArrowRight size={13} />
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* 3. Flash Deals & Promotions */}
       {dealProducts.length > 0 && (
         <section className={styles.dealsSection}>
           <div className={styles.sectionHeader}>
@@ -187,7 +280,7 @@ export default function Home() {
 
           <div className={styles.dealsGrid}>
             {dealProducts.map((p: any) => (
-              <div key={p.id} className={`${styles.dealCard} glass`}>
+              <div key={p.id || p._id} className={`${styles.dealCard} glass`}>
                 <div className={styles.dealBadge}>{p.category === 'smartphones' ? 'Smartphone' : 'Accessory'}</div>
                 <img src={p.images?.[0] || 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=300'} alt={p.name} />
                 <h3>{p.name}</h3>
@@ -203,225 +296,6 @@ export default function Home() {
           </div>
         </section>
       )}
-
-      {/* 3. AI Phone Finder Wizard */}
-      <section className={`${styles.wizardSection} glass`}>
-        <div className={styles.wizardHeader}>
-          <Sparkles className={styles.wizardSparkle} />
-          <h2>Smart Product Finder</h2>
-          <p>Answer 3 quick questions to get instant personalized phone & accessory recommendations</p>
-        </div>
-
-        <div className={styles.wizardCard}>
-          {finderStep === 1 && (
-            <div className={styles.wizardStep}>
-              <h3>1. What is your preferred budget range?</h3>
-              <div className={styles.optionsGrid}>
-                {[
-                  { label: 'Under ₹15,000 (Budget)', val: 15000 },
-                  { label: '₹15,000 - ₹35,000 (Mid-Range)', val: 35000 },
-                  { label: '₹35,000 - ₹60,000 (Premium)', val: 60000 },
-                  { label: '₹60,000+ (Ultra Flagship)', val: 120000 }
-                ].map((opt) => (
-                  <button
-                    key={opt.val}
-                    className={`${styles.optBtn} ${finderAnswers.budget === opt.val ? styles.optSelected : ''}`}
-                    onClick={() => {
-                      setFinderAnswers({ ...finderAnswers, budget: opt.val });
-                      setFinderStep(2);
-                    }}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {finderStep === 2 && (
-            <div className={styles.wizardStep}>
-              <h3>2. What is your top priority feature?</h3>
-              <div className={styles.optionsGrid}>
-                {[
-                  { label: 'Camera & Portrait Quality', val: 'camera' },
-                  { label: 'Gaming & High FPS Performance', val: 'gaming' },
-                  { label: 'Battery Life & Super Fast Charge', val: 'battery' },
-                  { label: 'Clean UI & Long Software Updates', val: 'display' }
-                ].map((opt) => (
-                  <button
-                    key={opt.val}
-                    className={`${styles.optBtn} ${finderAnswers.priority === opt.val ? styles.optSelected : ''}`}
-                    onClick={() => {
-                      setFinderAnswers({ ...finderAnswers, priority: opt.val });
-                      setFinderStep(3);
-                    }}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {finderStep === 3 && (
-            <div className={styles.wizardStep}>
-              <h3>3. Select preferred brand ecosystems</h3>
-              <div className={styles.optionsGrid}>
-                {['Vivo', 'Lava', 'Nothing', 'Samsung', 'OnePlus', 'Apple', 'Any Brand'].map((b) => (
-                  <button
-                    key={b}
-                    className={`${styles.optBtn} ${finderAnswers.brand === b ? styles.optSelected : ''}`}
-                    onClick={() => {
-                      setFinderAnswers({ ...finderAnswers, brand: b });
-                      handleFinderSubmit();
-                    }}
-                  >
-                    {b}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {finderStep === 4 && finderResult && (
-            <div className={styles.wizardResult}>
-              <CheckCircle size={40} className={styles.resultIcon} />
-              <h3>Your Ideal Match: {finderResult.name}</h3>
-              <p style={{ marginTop: '8px' }}>
-                Brand: <strong>{finderResult.brand?.name || finderResult.brand}</strong> | Price: <strong>₹{(finderResult.discountPrice || finderResult.price || 0).toLocaleString('en-IN')}</strong>
-              </p>
-
-              <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '16px' }}>
-                <Link href={finderResult.slug ? `/products/${finderResult.slug}` : '/products'} className="btn btnPrimary">
-                  View Full Specifications
-                </Link>
-                <button
-                  className="btn btnSecondary"
-                  onClick={() => {
-                    setFinderStep(1);
-                    setFinderAnswers({ budget: 0, priority: '', brand: '' });
-                  }}
-                >
-                  Retake Quiz
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* 4. Interactive Exchange Value Calculator */}
-      <section className={styles.calculatorSection}>
-        <div className={styles.calcGrid}>
-          {/* Exchange Value Widget */}
-          <div className={`${styles.calcCard} glass`}>
-            <h2>Trade-In Exchange Valuation</h2>
-            <p>Check instant estimated trade-in value for your old smartphone</p>
-
-            <div className={styles.calcForm}>
-              <div className={styles.formGroup}>
-                <label>Old Phone Brand</label>
-                <select value={exchangeBrand} onChange={(e) => setExchangeBrand(e.target.value)}>
-                  <option value="Apple">Apple iPhone</option>
-                  <option value="Samsung">Samsung Galaxy</option>
-                  <option value="OnePlus">OnePlus</option>
-                  <option value="Vivo">Vivo</option>
-                  <option value="Xiaomi">Xiaomi / Redmi</option>
-                  <option value="Other">Other Brand</option>
-                </select>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Original Purchase Price (₹)</label>
-                <input
-                  type="number"
-                  value={exchangeOrigVal}
-                  onChange={(e) => setExchangeOrigVal(e.target.value)}
-                  placeholder="50000"
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Physical Condition</label>
-                <select value={exchangeCond} onChange={(e) => setExchangeCond(e.target.value)}>
-                  <option value="Excellent">Flawless (No scratches/dents)</option>
-                  <option value="Good">Good (Minor light wear)</option>
-                  <option value="Fair">Fair (Noticeable scratches)</option>
-                </select>
-              </div>
-
-              <button className="btn btnPrimary" onClick={calculateExchange} style={{ width: '100%', marginTop: '10px' }}>
-                Calculate Estimated Trade Value
-              </button>
-
-              {exchangeResult !== null && (
-                <div className={styles.calcOutput}>
-                  <span>Estimated Exchange Value:</span>
-                  <strong>₹{exchangeResult.toLocaleString('en-IN')}</strong>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* No-Cost EMI Calculator Widget */}
-          <div className={`${styles.calcCard} glass`}>
-            <h2>No-Cost EMI Estimator</h2>
-            <p>Calculate monthly installment budget for your next flagship device</p>
-
-            <div className={styles.calcForm}>
-              <div className={styles.formGroup}>
-                <label>Device Net Price (₹)</label>
-                <input
-                  type="number"
-                  value={emiPrincipal}
-                  onChange={(e) => setEmiPrincipal(e.target.value)}
-                  placeholder="24999"
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Tenure (Months)</label>
-                <select value={emiMonths} onChange={(e) => setEmiMonths(parseInt(e.target.value))}>
-                  <option value={3}>3 Months No-Cost EMI</option>
-                  <option value={6}>6 Months No-Cost EMI</option>
-                  <option value={9}>9 Months Standard EMI</option>
-                  <option value={12}>12 Months Standard EMI</option>
-                </select>
-              </div>
-
-              <button className="btn btnPrimary" onClick={calculateEMI} style={{ width: '100%', marginTop: '10px' }}>
-                Compute Monthly Installment
-              </button>
-
-              {emiResult !== null && (
-                <div className={styles.calcOutput}>
-                  <span>Estimated Monthly Payment:</span>
-                  <strong>₹{emiResult.toLocaleString('en-IN')} / mo</strong>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. Store Benefits */}
-      <section className={styles.benefits}>
-        <div className={styles.benefitCard}>
-          <Shield size={32} className={styles.benefitIcon} />
-          <h3>100% Genuine Products</h3>
-          <p>Direct brand warranty and certified official inventory</p>
-        </div>
-        <div className={styles.benefitCard}>
-          <Award size={32} className={styles.benefitIcon} />
-          <h3>Free Express Shipping</h3>
-          <p>Same day dispatch with doorstep delivery nationwide</p>
-        </div>
-        <div className={styles.benefitCard}>
-          <Zap size={32} className={styles.benefitIcon} />
-          <h3>Easy 7-Day Replacement</h3>
-          <p>Hassle-free replacement policy for defective units</p>
-        </div>
-      </section>
     </div>
   );
 }

@@ -5,10 +5,9 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../store';
 import { addToCart } from '../../../store/cartSlice';
-import { addToCompare, removeFromCompare } from '../../../store/compareSlice';
 import { 
   Star, ShieldAlert, Truck, ChevronRight, ShoppingCart, 
-  HelpCircle, RefreshCcw, Smartphone, BadgePercent, ArrowLeftRight 
+  HelpCircle, RefreshCcw, Smartphone, BadgePercent 
 } from 'lucide-react';
 import styles from './details.module.css';
 import { useToast } from '../../../context/ToastContext';
@@ -462,38 +461,6 @@ export default function ProductDetails() {
     return matchedVar ? matchedVar.stock === 0 : false;
   };
 
-  const handleToggleCompare = () => {
-    if (!product) return;
-    const inCompare = compareItems.some((i: any) => i.id === product.id);
-    if (inCompare) {
-      dispatch(removeFromCompare(product.id));
-      showToast(`${product.name} removed from comparison matrix.`, 'info');
-    } else {
-      if (compareItems.length >= 4) {
-        showToast('You can only compare a maximum of 4 smartphones.', 'warning');
-        return;
-      }
-      dispatch(
-        addToCompare({
-          id: product.id,
-          name: product.name,
-          slug: product.slug,
-          image: product.images?.[0] || '',
-          brand: product.brand?.name || product.brand || 'Smart',
-          price: selectedPrice,
-          specs: {
-            processor: product.specs?.processor || 'Octa-core',
-            camera: product.specs?.rearCamera || '50MP',
-            battery: product.specs?.battery || '5000mAh',
-            display: product.specs?.display || 'AMOLED',
-            refreshRate: product.specs?.refreshRate || '120Hz'
-          }
-        })
-      );
-      showToast(`${product.name} added to comparison matrix.`, 'success');
-    }
-  };
-
   // Delivery check helper
   const handlePincodeCheck = (e: React.FormEvent) => {
     e.preventDefault();
@@ -917,20 +884,6 @@ export default function ProductDetails() {
             >
               <ShoppingCart size={18} /> {selectedStock !== 0 ? 'Add to Cart' : 'Out of Stock'}
             </button>
-            {!isAccessory && (
-              <button
-                className="btn btnSecondary"
-                onClick={handleToggleCompare}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
-              >
-                <ArrowLeftRight size={18} />
-                {compareItems.some((i: any) => i.id === product.id) ? 'Remove Compare' : 'Add to Compare'}
-              </button>
-            )}
             <button
               className="btn btnPrimary"
               onClick={() => handleCartAdd(true)}

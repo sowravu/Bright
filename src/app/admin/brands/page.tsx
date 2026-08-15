@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { useToast } from '../../../context/ToastContext';
-import { Building2, Plus, Trash2, Edit3, X, Search, CheckCircle2 } from 'lucide-react';
+import { Building2, Plus, Trash2, Edit3, X, Search, CheckCircle2, Sparkles, Wand2 } from 'lucide-react';
 import styles from '../admin.module.css';
 
 export default function BrandsAdminPage() {
@@ -23,6 +23,11 @@ export default function BrandsAdminPage() {
   const [editBrandLogo, setEditBrandLogo] = useState('');
   const [editBrandDesc, setEditBrandDesc] = useState('');
   const [deleteBrandTarget, setDeleteBrandTarget] = useState<any | null>(null);
+
+  // AI Logo Prompt Modal State
+  const [showAiPromptModal, setShowAiPromptModal] = useState<{ target: 'new' | 'edit'; brandName: string } | null>(null);
+  const [aiCustomPrompt, setAiCustomPrompt] = useState('');
+  const [generatingAiLogo, setGeneratingAiLogo] = useState(false);
 
   const fetchDbBrands = async () => {
     try {
@@ -51,69 +56,149 @@ export default function BrandsAdminPage() {
       reader.onloadend = () => {
         if (typeof reader.result === 'string') {
           callback(reader.result);
-          showToast(`Logo "${file.name}" selected from computer!`, 'success');
+          showToast(`Logo "${file.name}" loaded from computer!`, 'success');
         }
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleAddBrandSubmit = (e: React.FormEvent) => {
+  const openAiPromptModal = (target: 'new' | 'edit') => {
+    const bName = target === 'new' ? newBrandName.trim() : editBrandName.trim();
+    if (!bName) {
+      showToast('Please type a Brand Name first before opening AI Generator!', 'warning');
+      return;
+    }
+    setShowAiPromptModal({ target, brandName: bName });
+    setAiCustomPrompt(`Official ${bName} vector logo`);
+  };
+
+  const handleExecuteGenerateAiLogo = async () => {
+    if (!showAiPromptModal) return;
+    const { target, brandName } = showAiPromptModal;
+
+    setGeneratingAiLogo(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/brands/ai-logo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token}`
+        },
+        body: JSON.stringify({
+          name: brandName,
+          prompt: aiCustomPrompt
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.logo) {
+          if (target === 'new') {
+            setNewBrandLogo(data.logo);
+          } else {
+            setEditBrandLogo(data.logo);
+          }
+          showToast(`✨ Generated AI Logo for "${brandName}" via Gemini API!`, 'success');
+          setShowAiPromptModal(null);
+        } else {
+          showToast('Could not generate AI logo', 'error');
+        }
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.message || 'AI logo generation failed', 'error');
+      }
+    } catch (_) {
+      showToast('Network error generating AI logo', 'error');
+    } finally {
+      setGeneratingAiLogo(false);
+    }
+  };
+
+  const handleAddBrandSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = newBrandName.trim();
     if (!trimmed) return;
 
-    fetch('http://localhost:5000/api/brands', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${auth.token}`
-      },
-      body: JSON.stringify({
-        name: trimmed,
-        description: newBrandDesc,
-        logo: newBrandLogo
-      })
-    }).then(() => fetchDbBrands()).catch(() => {});
+    try {
+      const res = await fetch('http://localhost:5000/api/brands', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token}`
+        },
+        body: JSON.stringify({
+          name: trimmed,
+          description: newBrandDesc,
+          logo: newBrandLogo
+        })
+      });
 
-    showToast(`Brand "${trimmed}" added successfully!`, 'success');
-    setNewBrandName('');
-    setNewBrandDesc('');
-    setNewBrandLogo('');
-    setShowAddBrandModal(false);
+      if (res.ok) {
+        showToast(`Brand "${trimmed}" added successfully!`, 'success');
+        await fetchDbBrands();
+        setNewBrandName('');
+        setNewBrandDesc('');
+        setNewBrandLogo('');
+        setShowAddBrandModal(false);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.message || 'Failed to add brand', 'error');
+      }
+    } catch (_) {
+      showToast('Error adding brand', 'error');
+    }
   };
 
-  const handleEditBrandSubmit = (e: React.FormEvent) => {
+  const handleEditBrandSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingBrand || !editBrandName.trim()) return;
 
-    fetch(`http://localhost:5000/api/brands/${editingBrand.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${auth.token}`
-      },
-      body: JSON.stringify({
-        name: editBrandName.trim(),
-        description: editBrandDesc,
-        logo: editBrandLogo
-      })
-    }).then(() => fetchDbBrands()).catch(() => {});
+    try {
+      const res = await fetch(`http://localhost:5000/api/brands/${editingBrand.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token}`
+        },
+        body: JSON.stringify({
+          name: editBrandName.trim(),
+          description: editBrandDesc,
+          logo: editBrandLogo
+        })
+      });
 
-    showToast(`Brand "${editBrandName.trim()}" updated successfully!`, 'success');
-    setEditingBrand(null);
+      if (res.ok) {
+        showToast(`Brand "${editBrandName.trim()}" logo & info saved to MongoDB!`, 'success');
+        await fetchDbBrands();
+        setEditingBrand(null);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.message || 'Failed to save brand changes', 'error');
+      }
+    } catch (_) {
+      showToast('Error saving brand changes', 'error');
+    }
   };
 
-  const confirmExecuteRemoveBrand = () => {
+  const confirmExecuteRemoveBrand = async () => {
     if (!deleteBrandTarget) return;
 
-    fetch(`http://localhost:5000/api/brands/${deleteBrandTarget.id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${auth.token}` }
-    }).then(() => fetchDbBrands()).catch(() => {});
+    try {
+      const res = await fetch(`http://localhost:5000/api/brands/${deleteBrandTarget.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${auth.token}` }
+      });
 
-    showToast(`Brand "${deleteBrandTarget.name}" removed from directory.`, 'info');
-    setDeleteBrandTarget(null);
+      if (res.ok) {
+        showToast(`Brand "${deleteBrandTarget.name}" removed from directory.`, 'info');
+        await fetchDbBrands();
+      }
+    } catch (_) {
+      showToast('Error deleting brand', 'error');
+    } finally {
+      setDeleteBrandTarget(null);
+    }
   };
 
   const filteredBrands = brandsDetailList.filter(b => 
@@ -134,7 +219,7 @@ export default function BrandsAdminPage() {
               <div>
                 <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 800, letterSpacing: '-0.02em' }}>Brands Directory</h2>
                 <span style={{ fontSize: '13px', color: 'var(--foreground-secondary)' }}>
-                  Manage official manufacturer partners, logos, and brand profiles.
+                  Manage official manufacturer partners, Gemini AI prompt-generated logos, and brand profiles.
                 </span>
               </div>
             </div>
@@ -202,16 +287,27 @@ export default function BrandsAdminPage() {
                   width: '56px', 
                   height: '56px', 
                   borderRadius: '12px', 
-                  background: 'var(--bg-secondary)', 
+                  background: '#ffffff', 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center', 
                   overflow: 'hidden', 
                   border: '1px solid var(--border-color)',
+                  padding: '6px',
                   flexShrink: 0
                 }}>
                   {b.logo ? (
-                    <img src={b.logo} alt={b.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img 
+                      src={b.logo} 
+                      alt={b.name} 
+                      onError={(e) => {
+                        const initials = b.name ? b.name.substring(0, 2).toUpperCase() : 'BR';
+                        e.currentTarget.src = `data:image/svg+xml;utf8,${encodeURIComponent(
+                          `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" rx="40" fill="#a855f7"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-weight="900" font-size="70" fill="#fff">${initials}</text></svg>`
+                        )}`;
+                      }}
+                      style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+                    />
                   ) : (
                     <Building2 size={26} style={{ color: '#a855f7' }} />
                   )}
@@ -258,7 +354,7 @@ export default function BrandsAdminPage() {
       {/* Add Brand Modal */}
       {showAddBrandModal && (
         <div className={styles.modalOverlay}>
-          <div className={styles.modalContent} style={{ maxWidth: '520px', background: 'var(--card-bg)' }}>
+          <div className={styles.modalContent} style={{ maxWidth: '540px', background: 'var(--card-bg)' }}>
             <div className={styles.modalHeader}>
               <h2>Add Brand Partner to MongoDB</h2>
               <button onClick={() => setShowAddBrandModal(false)} className={styles.modalClose}><X size={20} /></button>
@@ -268,7 +364,7 @@ export default function BrandsAdminPage() {
                 <label>Brand Name</label>
                 <input 
                   type="text" 
-                  placeholder="e.g. Google, Samsung, Xiaomi" 
+                  placeholder="e.g. Google, Samsung, Xiaomi, Motorola" 
                   value={newBrandName} 
                   onChange={(e) => setNewBrandName(e.target.value)} 
                   required 
@@ -276,14 +372,47 @@ export default function BrandsAdminPage() {
               </div>
 
               <div className={styles.inputGroup}>
-                <label>Brand Logo (Upload from Computer)</label>
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={(e) => handleLocalFileUpload(e, setNewBrandLogo)}
-                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <label style={{ margin: 0 }}>Brand Logo Image</label>
+                  <button
+                    type="button"
+                    onClick={() => openAiPromptModal('new')}
+                    style={{
+                      background: 'linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '5px 12px',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      boxShadow: '0 2px 8px rgba(168, 85, 247, 0.3)'
+                    }}
+                  >
+                    <Sparkles size={12} /> ✨ Prompt Gemini AI Logo
+                  </button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => handleLocalFileUpload(e, setNewBrandLogo)}
+                  />
+                  <input 
+                    type="text" 
+                    placeholder="Or paste direct image URL (https://...)" 
+                    value={newBrandLogo.startsWith('data:') ? '' : newBrandLogo} 
+                    onChange={(e) => setNewBrandLogo(e.target.value)}
+                  />
+                </div>
                 {newBrandLogo && (
-                  <img src={newBrandLogo} alt="Brand Logo Preview" style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px', marginTop: '8px' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px' }}>
+                    <img src={newBrandLogo} alt="Brand Logo Preview" style={{ width: '56px', height: '56px', objectFit: 'contain', borderRadius: '8px', border: '1px solid var(--border-color)', background: '#fff', padding: '4px' }} />
+                    <span style={{ fontSize: '12px', color: '#10b981', fontWeight: 700 }}>✓ Logo image loaded</span>
+                  </div>
                 )}
               </div>
 
@@ -308,7 +437,7 @@ export default function BrandsAdminPage() {
       {/* Edit Brand Modal */}
       {editingBrand && (
         <div className={styles.modalOverlay}>
-          <div className={styles.modalContent} style={{ maxWidth: '520px', background: 'var(--card-bg)' }}>
+          <div className={styles.modalContent} style={{ maxWidth: '540px', background: 'var(--card-bg)' }}>
             <div className={styles.modalHeader}>
               <h2>Edit Brand: {editingBrand.name}</h2>
               <button onClick={() => setEditingBrand(null)} className={styles.modalClose}><X size={20} /></button>
@@ -325,14 +454,47 @@ export default function BrandsAdminPage() {
               </div>
 
               <div className={styles.inputGroup}>
-                <label>Brand Logo (Upload New Logo)</label>
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={(e) => handleLocalFileUpload(e, setEditBrandLogo)}
-                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <label style={{ margin: 0 }}>Brand Logo Image</label>
+                  <button
+                    type="button"
+                    onClick={() => openAiPromptModal('edit')}
+                    style={{
+                      background: 'linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '5px 12px',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      boxShadow: '0 2px 8px rgba(168, 85, 247, 0.3)'
+                    }}
+                  >
+                    <Sparkles size={12} /> ✨ Prompt Gemini AI Logo
+                  </button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => handleLocalFileUpload(e, setEditBrandLogo)}
+                  />
+                  <input 
+                    type="text" 
+                    placeholder="Or paste direct image URL (https://...)" 
+                    value={editBrandLogo.startsWith('data:') ? '' : editBrandLogo} 
+                    onChange={(e) => setEditBrandLogo(e.target.value)}
+                  />
+                </div>
                 {editBrandLogo && (
-                  <img src={editBrandLogo} alt="Brand Logo Preview" style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px', marginTop: '8px' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px' }}>
+                    <img src={editBrandLogo} alt="Brand Logo Preview" style={{ width: '56px', height: '56px', objectFit: 'contain', borderRadius: '8px', border: '1px solid var(--border-color)', background: '#fff', padding: '4px' }} />
+                    <span style={{ fontSize: '12px', color: '#10b981', fontWeight: 700 }}>✓ Logo image loaded</span>
+                  </div>
                 )}
               </div>
 
@@ -349,6 +511,86 @@ export default function BrandsAdminPage() {
                 Save Brand Changes
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Interactive Gemini AI Logo Prompt Modal */}
+      {showAiPromptModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent} style={{ maxWidth: '480px', background: 'var(--card-bg)' }}>
+            <div className={styles.modalHeader}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Sparkles size={20} style={{ color: '#a855f7' }} />
+                <h2 style={{ fontSize: '18px', margin: 0 }}>Gemini AI Logo Generator Prompt</h2>
+              </div>
+              <button onClick={() => setShowAiPromptModal(null)} className={styles.modalClose}><X size={20} /></button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '8px' }}>
+              <p style={{ fontSize: '13px', color: 'var(--foreground-secondary)', margin: 0 }}>
+                Specify what logo you want for <strong>{showAiPromptModal.brandName}</strong>. Type your exact prompt or choose a preset option below:
+              </p>
+
+              <div className={styles.inputGroup}>
+                <label>Custom AI Prompt Instructions</label>
+                <input 
+                  type="text" 
+                  value={aiCustomPrompt} 
+                  onChange={(e) => setAiCustomPrompt(e.target.value)}
+                  placeholder="e.g. Official Samsung blue vector text logo, or 3D gold emblem..."
+                  style={{ width: '100%', fontWeight: 600 }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--foreground-secondary)', display: 'block', marginBottom: '8px' }}>
+                  Quick Preset Prompt Chips:
+                </label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {[
+                    `Official ${showAiPromptModal.brandName} vector logo`,
+                    `3D glassmorphic modern tech emblem`,
+                    `Minimalist neon vector icon`,
+                    `Luxury 3D gold metallic badge`
+                  ].map((preset, pIdx) => (
+                    <button
+                      key={pIdx}
+                      type="button"
+                      onClick={() => setAiCustomPrompt(preset)}
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        border: aiCustomPrompt === preset ? '1px solid #a855f7' : '1px solid var(--border-color)',
+                        background: aiCustomPrompt === preset ? 'rgba(168, 85, 247, 0.12)' : 'var(--bg-secondary)',
+                        color: aiCustomPrompt === preset ? '#a855f7' : 'var(--foreground)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '14px' }}>
+                <button onClick={() => setShowAiPromptModal(null)} className="btn btnSecondary" style={{ fontSize: '13px' }}>
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleExecuteGenerateAiLogo} 
+                  disabled={generatingAiLogo}
+                  className="btn btnPrimary" 
+                  style={{ fontSize: '13px', background: 'linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <Wand2 size={15} />
+                  {generatingAiLogo ? 'Generating Logo...' : '✨ Generate AI Logo'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -6,6 +6,7 @@ const {
   getBrandById,
   updateBrand,
   deleteBrand,
+  generateAiLogo,
 } = require('../controllers/brandController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
@@ -15,6 +16,7 @@ router.get('/', getBrands);
 router.get('/:id', getBrandById);
 
 // Protected Admin routes
+router.post('/ai-logo', protect, authorize('ADMIN'), generateAiLogo);
 router.post('/', protect, authorize('ADMIN'), upload.single('logo'), createBrand);
 router.put('/:id', protect, authorize('ADMIN'), upload.single('logo'), updateBrand);
 router.delete('/:id', protect, authorize('ADMIN'), deleteBrand);

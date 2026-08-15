@@ -82,9 +82,9 @@ export default function Footer() {
 
         {/* Links Column 2 */}
         <div className={styles.linksCol}>
-          <h3>Compare & Offers</h3>
+          <h3>Offers & Catalog</h3>
           <ul>
-            <li><Link href="/compare">Smart Compare</Link></li>
+            <li><Link href="/products">All Smartphones</Link></li>
             <li><Link href="/offers">Student Discounts</Link></li>
             <li><Link href="/offers">EMI Calculator</Link></li>
             <li><Link href="/offers">Exchange Offers</Link></li>

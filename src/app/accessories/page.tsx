@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
 import { addToCart } from '../../store/cartSlice';
-import { Filter, ShoppingBag } from 'lucide-react';
+import { Filter, ShoppingBag, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from '../products/products.module.css';
 import { useToast } from '../../context/ToastContext';
 
@@ -28,6 +28,15 @@ function AccessoriesCatalog() {
   // Dynamic Metadata States
   const [brandsList, setBrandsList] = useState<string[]>([]);
   const [accessoryTypesList, setAccessoryTypesList] = useState<any[]>([]);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedBrand, priceMax, sortBy, searchQuery, selectedCategory]);
 
   // Load products catalog from persistent Redux state
   const productsCatalog = useSelector((state: RootState) => state.products.items);
@@ -140,6 +149,19 @@ function AccessoriesCatalog() {
     loadProducts();
   }, [selectedBrand, priceMax, sortBy, searchQuery, selectedCategory, productsCatalog]);
 
+  // Pagination Calculation
+  const totalItems = products.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedProducts = products.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 120, behavior: 'smooth' });
+    }
+  };
+
   // Add to cart helper
   const handleAddToCart = (prod: any) => {
     const itemPrice = prod.discountPrice || prod.basePrice || prod.price || 0;
@@ -165,33 +187,24 @@ function AccessoriesCatalog() {
   };
 
   return (
-    <div className={`${styles.productsPage} container`}>
-      <div className={styles.layoutGrid}>
+    <div className={`${styles.catalogPage} container`}>
+      <header className={styles.header}>
+        <h1>Official Accessories & Audio Directory</h1>
+        <p>Discover fast chargers, GaN power adapters, TWS earbuds, and protective cases.</p>
+      </header>
+
+      <div className={styles.contentLayout}>
         {/* 1. Sidebar Filters */}
         <aside className={`${styles.sidebar} glass`}>
-          <div className={styles.filterTitle}>
-            <Filter size={18} />
-            <h2>Accessories Filters</h2>
-          </div>
-
-          {/* Text Search Filter */}
-          <div className={styles.filterGroup} style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
-            <h3>Text Search</h3>
+          <div className={styles.filterGroup}>
+            <h3><Filter size={16} /> Text Search</h3>
             <div style={{ position: 'relative' }}>
               <input
                 type="text"
                 placeholder="Search accessories..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1px solid var(--border-color)',
-                  backgroundColor: 'var(--bg-secondary)',
-                  color: 'var(--foreground)',
-                  fontSize: '14px'
-                }}
+                className={styles.textInputFilter}
               />
               {searchQuery && (
                 <button
@@ -217,7 +230,7 @@ function AccessoriesCatalog() {
 
           {/* Dynamic Accessory Category Dropdown */}
           <div className={styles.filterGroup}>
-            <h3>Select Category</h3>
+            <h3>Accessory Type</h3>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
@@ -232,46 +245,47 @@ function AccessoriesCatalog() {
             </select>
           </div>
 
-          {/* Dynamic Brand Filter checkboxes */}
+          {/* Dynamic Brand Filter */}
           <div className={styles.filterGroup}>
-            <h3>Brand</h3>
-            <div className={styles.options}>
+            <h3>Brand Ecosystem</h3>
+            <select
+              value={selectedBrand}
+              onChange={(e) => setSelectedBrand(e.target.value)}
+              className={styles.selectFilter}
+            >
+              <option value="">All Brands</option>
               {(brandsList.length > 0 ? brandsList : ['Vivo', 'Lava', 'Samsung', 'Apple', 'OnePlus', 'Nothing', 'Xiaomi']).map((b: string) => (
-                <label key={b} className={styles.checkLabel}>
-                  <input
-                    type="radio"
-                    name="brand"
-                    checked={selectedBrand?.toLowerCase() === b.toLowerCase()}
-                    onChange={() => setSelectedBrand(b)}
-                  />
-                  <span>{b}</span>
-                </label>
+                <option key={b} value={b}>{b}</option>
               ))}
-              <button className={styles.clearBtn} onClick={() => setSelectedBrand('')}>Clear Brand</button>
-            </div>
+            </select>
           </div>
 
           {/* Price Range Slider */}
           <div className={styles.filterGroup}>
-            <h3>Max Price: ₹{priceMax.toLocaleString('en-IN')}</h3>
-            <input
-              type="range"
-              min={500}
-              max={40000}
-              step={500}
-              value={priceMax}
-              onChange={(e) => setPriceMax(parseInt(e.target.value))}
-              className={styles.rangeInput}
-            />
+            <h3>Max Price</h3>
+            <div className={styles.priceRange}>
+              <input
+                type="range"
+                min={500}
+                max={40000}
+                step={500}
+                value={priceMax}
+                onChange={(e) => setPriceMax(parseInt(e.target.value))}
+              />
+              <span>Up to ₹{priceMax.toLocaleString('en-IN')}</span>
+            </div>
           </div>
         </aside>
 
         {/* 2. Main Content Grid */}
-        <main className={styles.mainContent}>
-          {/* Toolbar */}
-          <div className={`${styles.toolbar} glass`}>
-            <div className={styles.toolbarInfo}>
-              <span>Sort By:</span>
+        <main className={styles.mainGrid}>
+          {/* Top Bar Toolbar */}
+          <div className={styles.gridTopBar}>
+            <span className={styles.resultsCount}>
+              Showing <strong>{totalItems > 0 ? `${startIndex + 1}–${Math.min(startIndex + itemsPerPage, totalItems)}` : 0}</strong> of <strong>{totalItems}</strong> accessory items
+            </span>
+            <div className={styles.sortBox}>
+              <ArrowUpDown size={14} />
               <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
                 <option value="popularity">Best Popularity</option>
                 <option value="price_asc">Price: Low to High</option>
@@ -283,69 +297,115 @@ function AccessoriesCatalog() {
 
           {/* Products grid */}
           {loading ? (
-            <div className={styles.loader}>Searching accessories catalog...</div>
-          ) : products.length === 0 ? (
-            <div className={styles.loader}>No accessories matching your criteria.</div>
+            <div className={styles.loadingState}>
+              <p>Searching accessories catalog...</p>
+            </div>
+          ) : paginatedProducts.length === 0 ? (
+            <div className={styles.emptyState}>
+              <h3>No matching accessories found</h3>
+              <p>Try clearing your search query or adjusting price filters.</p>
+              <button
+                onClick={() => {
+                  setSelectedBrand('');
+                  setSelectedCategory('');
+                  setSearchQuery('');
+                  setPriceMax(40000);
+                }}
+                className="btn btnSecondary"
+              >
+                Clear Filters
+              </button>
+            </div>
           ) : (
-            <div className={styles.productsGrid}>
-              {products.map((prod) => {
-                const itemSlug = prod.slug || prod.id || prod._id;
-                const overallStock = prod.stock || 0;
-                const mainPrice = prod.discountPrice || prod.basePrice || prod.price || 0;
-                const oldPrice = prod.basePrice || prod.price || 0;
+            <>
+              <div className={styles.productsGrid}>
+                {paginatedProducts.map((prod) => {
+                  const itemSlug = prod.slug || prod.id || prod._id;
+                  const overallStock = prod.stock ?? 10;
+                  const mainPrice = prod.discountPrice || prod.basePrice || prod.price || 0;
+                  const oldPrice = prod.basePrice || prod.price || 0;
+                  const brandName = prod.brand?.name || (typeof prod.brand === 'string' ? prod.brand : 'Brand');
+                  const accessoryTypeName = prod.accessoryType?.name || (typeof prod.accessoryType === 'string' ? prod.accessoryType : 'Accessory');
 
-                return (
-                  <div key={prod.id || prod._id} className={`${styles.productCard} glassCard`}>
-                    <Link href={`/products/${itemSlug}`}>
-                      <img src={prod.images?.[0] || 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?q=80&w=600'} alt={prod.name} className={styles.productImg} />
-                    </Link>
-                    <div className={styles.brandBadge}>{prod.brand?.name || (typeof prod.brand === 'string' ? prod.brand : 'Brand')}</div>
-                    <Link href={`/products/${itemSlug}`}>
-                      <h3 className={styles.name}>{prod.name}</h3>
-                    </Link>
-                    <p className={styles.briefSpecs}>
-                      {prod.accessoryType?.name || prod.specs?.compatibility || 'Official Mobile Accessory'}
-                    </p>
-                    <div style={{ marginTop: '8px', marginBottom: '12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{
-                        width: '8px',
-                        height: '8px',
-                        borderRadius: '50%',
-                        backgroundColor: overallStock > 0 ? (overallStock <= 5 ? 'var(--warning)' : 'var(--success)') : 'var(--error)',
-                        display: 'inline-block'
-                      }} />
-                      <span style={{ color: overallStock > 0 ? (overallStock <= 5 ? 'var(--warning)' : 'var(--success)') : 'var(--error)', fontWeight: 600 }}>
-                        {overallStock > 0 ? (overallStock <= 5 ? 'Few Stock Only' : 'In Stock') : 'Out of Stock'}
-                      </span>
-                    </div>
-                    <div className={styles.cardFooter}>
-                      <div className={styles.priceCol}>
-                        <span className={styles.price}>
-                          ₹{Number(mainPrice).toLocaleString('en-IN')}
-                        </span>
+                  return (
+                    <div key={prod.id || prod._id} className={styles.productCard}>
+                      <div className={styles.cardHeader}>
+                        <span className={styles.brandTag}>{brandName}</span>
+                        <span className={styles.accessoryTag}>{accessoryTypeName}</span>
+                      </div>
+
+                      <div className={styles.imageWrap}>
+                        <img src={prod.images?.[0] || 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?q=80&w=600'} alt={prod.name} />
+                      </div>
+
+                      <Link href={`/products/${itemSlug}`} className={styles.titleLink}>
+                        <h3>{prod.name}</h3>
+                      </Link>
+
+                      <div className={styles.cardPriceRow}>
+                        <span className={styles.priceCurrent}>₹{Number(mainPrice).toLocaleString('en-IN')}</span>
                         {prod.discountPrice && oldPrice > mainPrice && (
-                          <span className={styles.oldPrice}>
-                            ₹{Number(oldPrice).toLocaleString('en-IN')}
-                          </span>
+                          <span className={styles.priceOld}>₹{Number(oldPrice).toLocaleString('en-IN')}</span>
                         )}
                       </div>
-                      <button
-                        onClick={() => handleAddToCart(prod)}
-                        className={styles.cartIconBtn}
-                        style={{
-                          opacity: overallStock > 0 ? 1 : 0.5,
-                          cursor: overallStock > 0 ? 'pointer' : 'not-allowed'
-                        }}
-                        title={overallStock > 0 ? "Add to Cart" : "Out of Stock"}
-                        disabled={overallStock === 0}
-                      >
-                        <ShoppingBag size={18} />
-                      </button>
+
+                      <div className={styles.cardActions}>
+                        <Link href={`/products/${itemSlug}`} className="btn btnSecondary" style={{ flex: 1, fontSize: '12px' }}>
+                          View Details
+                        </Link>
+                        <button
+                          onClick={() => handleAddToCart(prod)}
+                          className="btn btnPrimary"
+                          title={overallStock > 0 ? "Add to Shopping Cart" : "Out of Stock"}
+                          disabled={overallStock === 0}
+                        >
+                          <ShoppingBag size={18} />
+                        </button>
+                      </div>
                     </div>
+                  );
+                })}
+              </div>
+
+              {/* Pagination Row */}
+              {totalPages > 1 && (
+                <div className={styles.paginationRow}>
+                  <span className={styles.paginationInfo}>
+                    Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong> ({totalItems} total accessories)
+                  </span>
+
+                  <div className={styles.paginationNav}>
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className={styles.pageNavBtn}
+                    >
+                      <ChevronLeft size={16} /> Previous
+                    </button>
+
+                    <div className={styles.pageNumbers}>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                        <button
+                          key={pageNum}
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`${styles.pageBtn} ${currentPage === pageNum ? styles.pageBtnActive : ''}`}
+                        >
+                          {pageNum}
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className={styles.pageNavBtn}
+                    >
+                      Next <ChevronRight size={16} />
+                    </button>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              )}
+            </>
           )}
         </main>
       </div>
@@ -355,7 +415,7 @@ function AccessoriesCatalog() {
 
 export default function AccessoriesPage() {
   return (
-    <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Loading accessories catalog...</div>}>
+    <Suspense fallback={<div style={{ padding: '60px', textAlign: 'center' }}>Loading accessories catalog...</div>}>
       <AccessoriesCatalog />
     </Suspense>
   );

@@ -7,7 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
 import { logout, updateUser } from '../store/authSlice';
-import { Search, ShoppingCart, User, Moon, Sun, ArrowLeftRight, Sparkles, ShieldCheck } from 'lucide-react';
+import { Search, ShoppingCart, User, Moon, Sun, Sparkles, ShieldCheck } from 'lucide-react';
 import styles from './Navbar.module.css';
 import { useToast } from '../context/ToastContext';
 
@@ -19,7 +19,6 @@ export default function Navbar() {
   const { showToast } = useToast();
   const auth = useSelector((state: RootState) => state.auth);
   const cart = useSelector((state: RootState) => state.cart);
-  const compare = useSelector((state: RootState) => state.compare);
   const productsCatalog = useSelector((state: RootState) => state.products.items);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -259,14 +258,6 @@ export default function Navbar() {
               </div>
             )}
           </div>
-
-          {/* Compare Link */}
-          <Link href="/compare" className={styles.iconBtn} title="Compare Products">
-            <ArrowLeftRight size={20} />
-            {compare.items.length > 0 && (
-              <span className={styles.badge}>{compare.items.length}</span>
-            )}
-          </Link>
 
           {/* Cart Link */}
           {(() => {
