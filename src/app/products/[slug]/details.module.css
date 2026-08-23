@@ -356,12 +356,43 @@
 
 .actionRow {
   display: flex;
-  gap: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .actionRow button {
-  width: 100%;
+  flex: 1;
+  min-width: 140px;
 }
+
+.whatsappBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  color: #FFFFFF !important;
+  border: none;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.25);
+}
+
+.whatsappBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+  background: linear-gradient(135deg, #28e06c 0%, #149c8d 100%);
+}
+
+.whatsappBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(37, 211, 102, 0.2);
+}
+
 
 /* Specs Section */
 .specsSection {

@@ -7,7 +7,7 @@ import { RootState } from '../../../store';
 import { addToCart } from '../../../store/cartSlice';
 import { 
   Star, ShieldAlert, Truck, ChevronRight, ShoppingCart, 
-  HelpCircle, RefreshCcw, Smartphone, BadgePercent 
+  HelpCircle, RefreshCcw, Smartphone, BadgePercent, MessageSquare
 } from 'lucide-react';
 import styles from './details.module.css';
 import { useToast } from '../../../context/ToastContext';
@@ -552,6 +552,51 @@ export default function ProductDetails() {
     }
   };
 
+  // WhatsApp Enquiry handler
+  const handleWhatsAppEnquiry = () => {
+    if (!product) return;
+
+    const formattedName = getFormattedProductName(product);
+    const isAcc = checkIsAccessory(product);
+
+    const messageLines = [
+      `Hello Bright Mobile! 👋`,
+      `I would like to enquire about the following product:`,
+      ``,
+      `📱 *Product:* ${formattedName}`,
+    ];
+
+    if (selectedColor) {
+      messageLines.push(`🎨 *Color:* ${selectedColor}`);
+    }
+
+    if (!isAcc && (selectedRam || selectedStorage)) {
+      const specDetails = [selectedRam ? `${selectedRam} RAM` : '', selectedStorage].filter(Boolean).join(' / ');
+      messageLines.push(`⚡ *Variant:* ${specDetails}`);
+    }
+
+    messageLines.push(`💰 *Price:* ₹${selectedPrice.toLocaleString()}`);
+
+    const stockText = selectedStock !== null
+      ? (selectedStock > 0 ? (selectedStock <= 5 ? 'Few Stock Only' : 'In Stock') : 'Out of Stock')
+      : (product.stock > 0 ? (product.stock <= 5 ? 'Few Stock Only' : 'In Stock') : 'Out of Stock');
+    messageLines.push(`📦 *Availability:* ${stockText}`);
+
+    if (typeof window !== 'undefined') {
+      messageLines.push(`🔗 *Link:* ${window.location.href}`);
+    }
+
+    messageLines.push(``);
+    messageLines.push(`Please share details regarding availability, ongoing bank offers, and delivery timelines. Thank you!`);
+
+    const fullMessage = messageLines.join('\n');
+    const phoneNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '919876543210';
+    const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(fullMessage)}`;
+
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  };
+
   // Review submission
   const handleSubmitReview = (e: React.FormEvent) => {
     e.preventDefault();
@@ -871,7 +916,7 @@ export default function ProductDetails() {
             </div>
           )}
 
-          {/* Cart Buttons */}
+          {/* Cart & Enquiry Buttons */}
           <div className={styles.actionRow} style={{ marginTop: '24px' }}>
             <button
               className="btn btnSecondary"
@@ -894,6 +939,13 @@ export default function ProductDetails() {
               }}
             >
               {selectedStock !== 0 ? 'Buy Now' : 'Temporarily Unavailable'}
+            </button>
+            <button
+              className={styles.whatsappBtn}
+              onClick={handleWhatsAppEnquiry}
+              title="Enquire about this product on WhatsApp"
+            >
+              <MessageSquare size={18} /> Enquire Now
             </button>
           </div>
         </div>
