@@ -21,7 +21,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     store.dispatch(rehydrateBanner());
 
     // Fetch live banner from backend if available
-    fetch('http://localhost:5000/api/banner')
+    fetch('/api/banner')
       .then((res) => {
         if (res.ok) return res.json();
         return null;

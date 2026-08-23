@@ -35,7 +35,7 @@ export default function Home() {
   useEffect(() => {
     const fetchBrands = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/brands');
+        const res = await fetch('/api/brands');
         if (res.ok) {
           const data = await res.json();
           const bList = data.brands || (Array.isArray(data) ? data : []);

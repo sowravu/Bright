@@ -17,7 +17,7 @@ export default function UsersAdminPage() {
   const fetchUsers = async () => {
     const token = auth.token || (typeof window !== 'undefined' ? localStorage.getItem('bright_token') : '');
     try {
-      const res = await fetch('http://localhost:5000/api/admin/users', {
+      const res = await fetch('/api/admin/users', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -39,7 +39,7 @@ export default function UsersAdminPage() {
     }
 
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/users/${userId}/block`, {
+      const res = await fetch(`/api/admin/users/${userId}/block`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       });

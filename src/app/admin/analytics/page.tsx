@@ -33,7 +33,7 @@ export default function AnalyticsAdminPage() {
   useEffect(() => {
     const fetchAdminStats = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/admin/analytics', {
+        const res = await fetch('/api/admin/analytics', {
           headers: { 'Authorization': `Bearer ${auth.token}` }
         });
         if (res.ok) {

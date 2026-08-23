@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "start:public": "next start -H 0.0.0.0 -p 3000",
-    "tunnel": "cloudflared tunnel --url http://localhost:3000",
+    "tunnel": "npx cloudflared tunnel --url http://localhost:3000",
     "lint": "eslint"
   },
   "dependencies": {

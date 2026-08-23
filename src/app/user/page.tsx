@@ -56,8 +56,6 @@ export default function UserDashboard() {
 
     if (!auth.isAuthenticated) {
       router.push('/login');
-    } else if (auth.user?.role === 'ADMIN') {
-      router.push('/admin');
     } else {
       if (auth.user) {
         setEditedName(auth.user.name || '');
@@ -73,7 +71,7 @@ export default function UserDashboard() {
       // Fetch user profile and saved addresses from MongoDB once
       const fetchUserData = async () => {
         try {
-          const profileRes = await fetch('http://localhost:5000/api/auth/profile', {
+          const profileRes = await fetch('/api/auth/profile', {
             headers: { 'Authorization': `Bearer ${auth.token}` }
           });
           if (profileRes.ok) {
@@ -86,7 +84,7 @@ export default function UserDashboard() {
             }
           }
 
-          const addrRes = await fetch('http://localhost:5000/api/auth/addresses', {
+          const addrRes = await fetch('/api/auth/addresses', {
             headers: { 'Authorization': `Bearer ${auth.token}` }
           });
           if (addrRes.ok) {
@@ -94,7 +92,7 @@ export default function UserDashboard() {
             setAddresses(addrs);
           }
 
-          const ordersRes = await fetch('http://localhost:5000/api/orders/my-orders', {
+          const ordersRes = await fetch('/api/orders/my-orders', {
             headers: { 'Authorization': `Bearer ${auth.token}` }
           });
           if (ordersRes.ok) {
@@ -118,7 +116,7 @@ export default function UserDashboard() {
       return;
     }
     try {
-      const res = await fetch('http://localhost:5000/api/auth/profile', {
+      const res = await fetch('/api/auth/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -149,7 +147,7 @@ export default function UserDashboard() {
       return;
     }
     try {
-      const res = await fetch('http://localhost:5000/api/auth/profile', {
+      const res = await fetch('/api/auth/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -190,7 +188,7 @@ export default function UserDashboard() {
       return;
     }
     try {
-      const res = await fetch('http://localhost:5000/api/auth/change-password', {
+      const res = await fetch('/api/auth/change-password', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -227,7 +225,7 @@ export default function UserDashboard() {
     e.preventDefault();
     if (!addrStreet.trim() || !addrCity.trim() || !addrPostal.trim()) return;
     try {
-      const res = await fetch('http://localhost:5000/api/auth/addresses', {
+      const res = await fetch('/api/auth/addresses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -265,7 +263,7 @@ export default function UserDashboard() {
 
   const handleDeleteAddress = async (id: string) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/auth/addresses/${id}`, {
+      const res = await fetch(`/api/auth/addresses/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${auth.token}`
@@ -288,7 +286,7 @@ export default function UserDashboard() {
   // Toggle 2FA secure trigger
   const handleToggle2FA = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/auth/2fa/toggle', {
+      const res = await fetch('/api/auth/2fa/toggle', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -315,7 +313,7 @@ export default function UserDashboard() {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:5000/api/orders/${orderId}/cancel`, {
+      const res = await fetch(`/api/orders/${orderId}/cancel`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

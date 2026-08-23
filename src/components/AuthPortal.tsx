@@ -99,7 +99,7 @@ export function AuthPortal({ initialRegister = false }: { initialRegister?: bool
 
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/auth/forgot-password', {
+      const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: resetEmail.trim() }),
@@ -138,7 +138,7 @@ export function AuthPortal({ initialRegister = false }: { initialRegister?: bool
 
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/auth/reset-password', {
+      const res = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -182,7 +182,7 @@ export function AuthPortal({ initialRegister = false }: { initialRegister?: bool
       const endpoint = isRegistering ? 'register' : 'login';
       const body = isRegistering ? { email, password, name, phone } : { email, password };
 
-      const res = await fetch(`http://localhost:5000/api/auth/${endpoint}`, {
+      const res = await fetch(`/api/auth/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -246,7 +246,7 @@ export function AuthPortal({ initialRegister = false }: { initialRegister?: bool
 
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/auth/verify-email', {
+      const res = await fetch('/api/auth/verify-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: pendingUser.email, code: verificationCode.trim() }),
@@ -276,7 +276,7 @@ export function AuthPortal({ initialRegister = false }: { initialRegister?: bool
     if (!pendingUser) return;
     setErrorMsg('');
     try {
-      const res = await fetch('http://localhost:5000/api/auth/resend-code', {
+      const res = await fetch('/api/auth/resend-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: pendingUser.email }),
@@ -297,7 +297,7 @@ export function AuthPortal({ initialRegister = false }: { initialRegister?: bool
     setLoading(true);
     setErrorMsg('');
     try {
-      const res = await fetch('http://localhost:5000/api/auth/google', {
+      const res = await fetch('/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(googleData),
@@ -358,6 +358,13 @@ export function AuthPortal({ initialRegister = false }: { initialRegister?: bool
   });
 
   const handleGoogleBtnClick = () => {
+    // Cloudflare Tunnel domains change dynamically and are not pre-authorized in Google Cloud Console.
+    // Trigger the seamless Google authentication modal fallback on tunnel domains.
+    if (typeof window !== 'undefined' && window.location.hostname.includes('trycloudflare.com')) {
+      setShowGoogleModal(true);
+      return;
+    }
+
     const envClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     if (envClientId && !envClientId.includes('dummygoogleclientid') && envClientId.trim() !== '') {
       try {

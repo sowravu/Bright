@@ -40,7 +40,7 @@ export default function OrdersAdminPage() {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/admin/orders', {
+      const res = await fetch('/api/admin/orders', {
         headers: {
           'Authorization': `Bearer ${auth.token}`
         }
@@ -65,7 +65,7 @@ export default function OrdersAdminPage() {
     setUpdatingId(orderId);
     try {
       const estDate = deliveryDates[orderId] || '';
-      const res = await fetch(`http://localhost:5000/api/admin/orders/${orderId}/status`, {
+      const res = await fetch(`/api/admin/orders/${orderId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -102,7 +102,7 @@ export default function OrdersAdminPage() {
     setUpdatingId(orderId);
     try {
       const estDate = deliveryDates[orderId] || '';
-      const res = await fetch(`http://localhost:5000/api/admin/orders/${orderId}/status`, {
+      const res = await fetch(`/api/admin/orders/${orderId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

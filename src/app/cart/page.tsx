@@ -85,7 +85,7 @@ export default function CartPage() {
       const headers: any = { 'Content-Type': 'application/json' };
       if (auth.token) headers['Authorization'] = `Bearer ${auth.token}`;
 
-      const res = await fetch('http://localhost:5000/api/cart/coupon', {
+      const res = await fetch('/api/cart/coupon', {
         method: 'POST',
         headers,
         body: JSON.stringify({ code: couponCode.trim().toUpperCase() })
@@ -151,7 +151,7 @@ export default function CartPage() {
         }
 
         // Create Razorpay Order on backend
-        const createRes = await fetch('http://localhost:5000/api/payment/create-order', {
+        const createRes = await fetch('/api/payment/create-order', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -187,7 +187,7 @@ export default function CartPage() {
           handler: async (response: any) => {
             try {
               // Verify payment on backend
-              const verifyRes = await fetch('http://localhost:5000/api/payment/verify', {
+              const verifyRes = await fetch('/api/payment/verify', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -276,7 +276,7 @@ export default function CartPage() {
       let receiptData: any = null;
 
       if (auth.token) {
-        const res = await fetch('http://localhost:5000/api/cart/checkout', {
+        const res = await fetch('/api/cart/checkout', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -325,7 +325,7 @@ export default function CartPage() {
       const mockPaymentId = `pay_test_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
       const mockSignature = `sig_test_${Date.now()}`;
 
-      const verifyRes = await fetch('http://localhost:5000/api/payment/verify', {
+      const verifyRes = await fetch('/api/payment/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

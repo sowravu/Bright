@@ -45,7 +45,7 @@ export default function SmartphonesAdminPage() {
 
     setIsGeneratingAi(true);
     try {
-      const res = await fetch('http://localhost:5000/api/products/generate-description', {
+      const res = await fetch('/api/products/generate-description', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -81,7 +81,7 @@ export default function SmartphonesAdminPage() {
 
   const fetchDbData = async () => {
     try {
-      const bRes = await fetch('http://localhost:5000/api/brands');
+      const bRes = await fetch('/api/brands');
       if (bRes.ok) {
         const bData = await bRes.json();
         const bList = bData.brands || (Array.isArray(bData) ? bData : []);
@@ -92,7 +92,7 @@ export default function SmartphonesAdminPage() {
         }
       }
 
-      const pRes = await fetch('http://localhost:5000/api/products?limit=200');
+      const pRes = await fetch('/api/products?limit=200');
       if (pRes.ok) {
         const pData = await pRes.json();
         const prods = pData.products || (Array.isArray(pData) ? pData : []);
@@ -281,7 +281,7 @@ export default function SmartphonesAdminPage() {
     };
 
     try {
-      const res = await fetch('http://localhost:5000/api/products', {
+      const res = await fetch('/api/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -312,7 +312,7 @@ export default function SmartphonesAdminPage() {
     const token = auth.token || (typeof window !== 'undefined' ? localStorage.getItem('bright_token') : '');
 
     try {
-      const res = await fetch(`http://localhost:5000/api/products/${prodId}`, {
+      const res = await fetch(`/api/products/${prodId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

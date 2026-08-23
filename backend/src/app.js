@@ -16,10 +16,10 @@ const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 
-// CORS — allow the Next.js frontend origin
+// CORS — allow frontend requests (including Cloudflare Tunnel)
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: true,
     credentials: true,
   })
 );

@@ -37,7 +37,7 @@ export default function AIChatBot() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/products/ai-chat', {
+      const res = await fetch('/api/products/ai-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: textToSend })

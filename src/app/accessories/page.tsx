@@ -54,8 +54,8 @@ function AccessoriesCatalog() {
     const fetchMetaData = async () => {
       try {
         const [brandsRes, typesRes] = await Promise.all([
-          fetch('http://localhost:5000/api/brands').catch(() => null),
-          fetch('http://localhost:5000/api/accessory-types').catch(() => null),
+          fetch('/api/brands').catch(() => null),
+          fetch('/api/accessory-types').catch(() => null),
         ]);
 
         if (brandsRes && brandsRes.ok) {
@@ -86,7 +86,7 @@ function AccessoriesCatalog() {
         if (selectedCategory) queryParams.append('accessoryType', selectedCategory);
 
         try {
-          const res = await fetch(`http://localhost:5000/api/accessories?${queryParams.toString()}`);
+          const res = await fetch(`/api/accessories?${queryParams.toString()}`);
           if (res.ok) {
             const data = await res.json();
             rawList = data.accessories || (Array.isArray(data) ? data : []);

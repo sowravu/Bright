@@ -31,7 +31,7 @@ export default function BrandsAdminPage() {
 
   const fetchDbBrands = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/brands');
+      const res = await fetch('/api/brands');
       if (res.ok) {
         const data = await res.json();
         const bList = data.brands || (Array.isArray(data) ? data : []);
@@ -79,7 +79,7 @@ export default function BrandsAdminPage() {
 
     setGeneratingAiLogo(true);
     try {
-      const res = await fetch('http://localhost:5000/api/brands/ai-logo', {
+      const res = await fetch('/api/brands/ai-logo', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -121,7 +121,7 @@ export default function BrandsAdminPage() {
     if (!trimmed) return;
 
     try {
-      const res = await fetch('http://localhost:5000/api/brands', {
+      const res = await fetch('/api/brands', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -155,7 +155,7 @@ export default function BrandsAdminPage() {
     if (!editingBrand || !editBrandName.trim()) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/brands/${editingBrand.id}`, {
+      const res = await fetch(`/api/brands/${editingBrand.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -185,7 +185,7 @@ export default function BrandsAdminPage() {
     if (!deleteBrandTarget) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/brands/${deleteBrandTarget.id}`, {
+      const res = await fetch(`/api/brands/${deleteBrandTarget.id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${auth.token}` }
       });

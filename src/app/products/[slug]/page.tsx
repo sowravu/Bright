@@ -167,7 +167,7 @@ export default function ProductDetails() {
     const fetchDetails = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`http://localhost:5000/api/products/${slug}`);
+        const res = await fetch(`/api/products/${slug}`);
         if (res.ok) {
           const data = await res.json();
           setProduct(data);

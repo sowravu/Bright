@@ -50,7 +50,7 @@ function ProductsCatalog() {
         if (selectedBrand) queryParams.set('brand', selectedBrand);
         if (selectedCategory) queryParams.set('category', selectedCategory);
 
-        const res = await fetch(`http://localhost:5000/api/products?${queryParams.toString()}`);
+        const res = await fetch(`/api/products?${queryParams.toString()}`);
         if (res.ok) {
           const data = await res.json();
           const items = Array.isArray(data) ? data : (data.products || []);

@@ -43,7 +43,7 @@ export default function AccessoriesAdminPage() {
 
     setIsGeneratingAi(true);
     try {
-      const res = await fetch('http://localhost:5000/api/accessories/generate-description', {
+      const res = await fetch('/api/accessories/generate-description', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -79,7 +79,7 @@ export default function AccessoriesAdminPage() {
 
   const fetchDbData = async () => {
     try {
-      const bRes = await fetch('http://localhost:5000/api/brands');
+      const bRes = await fetch('/api/brands');
       if (bRes.ok) {
         const bData = await bRes.json();
         const bList = bData.brands || (Array.isArray(bData) ? bData : []);
@@ -90,7 +90,7 @@ export default function AccessoriesAdminPage() {
         }
       }
 
-      const tRes = await fetch('http://localhost:5000/api/accessory-types');
+      const tRes = await fetch('/api/accessory-types');
       if (tRes.ok) {
         const tData = await tRes.json();
         const tList = tData.accessoryTypes || (Array.isArray(tData) ? tData : []);
@@ -101,7 +101,7 @@ export default function AccessoriesAdminPage() {
         }
       }
 
-      const aRes = await fetch('http://localhost:5000/api/accessories?limit=200');
+      const aRes = await fetch('/api/accessories?limit=200');
       if (aRes.ok) {
         const aData = await aRes.json();
         const accs = aData.accessories || (Array.isArray(aData) ? aData : []);
@@ -272,7 +272,7 @@ export default function AccessoriesAdminPage() {
     };
 
     try {
-      const res = await fetch('http://localhost:5000/api/accessories', {
+      const res = await fetch('/api/accessories', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -303,7 +303,7 @@ export default function AccessoriesAdminPage() {
     const token = auth.token || (typeof window !== 'undefined' ? localStorage.getItem('bright_token') : '');
 
     try {
-      const res = await fetch(`http://localhost:5000/api/accessories/${prodId}`, {
+      const res = await fetch(`/api/accessories/${prodId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

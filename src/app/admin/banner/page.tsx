@@ -171,7 +171,7 @@ export default function AdminBannerPage() {
 
     // Persist to backend API if available
     try {
-      const res = await fetch('http://localhost:5000/api/banner', {
+      const res = await fetch('/api/banner', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -201,7 +201,7 @@ export default function AdminBannerPage() {
     showToast('Banner reset to default settings.', 'success');
 
     try {
-      await fetch('http://localhost:5000/api/banner/reset', {
+      await fetch('/api/banner/reset', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${auth.token}`,

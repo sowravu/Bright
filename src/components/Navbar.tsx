@@ -35,7 +35,7 @@ export default function Navbar() {
     const fetchBrandsList = async () => {
       let fetchedNames: string[] = [];
       try {
-        const res = await fetch('http://localhost:5000/api/brands');
+        const res = await fetch('/api/brands');
         if (res.ok) {
           const data = await res.json();
           const list = data.brands || (Array.isArray(data) ? data : []);
@@ -65,7 +65,7 @@ export default function Navbar() {
 
     const verifySessionStatus = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/auth/profile', {
+        const res = await fetch('/api/auth/profile', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -113,7 +113,7 @@ export default function Navbar() {
     if (searchQuery.trim().length > 2) {
       const fetchSuggestions = async () => {
         try {
-          const res = await fetch(`http://localhost:5000/api/products/ai-search?query=${encodeURIComponent(searchQuery)}`);
+          const res = await fetch(`/api/products/ai-search?query=${encodeURIComponent(searchQuery)}`);
           if (res.ok) {
             const data = await res.json();
             setSearchSuggestions(data.results.slice(0, 5));

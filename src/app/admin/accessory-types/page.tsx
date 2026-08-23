@@ -28,7 +28,7 @@ export default function AccessoryTypesAdminPage() {
 
   const fetchDbAccessoryTypes = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/accessory-types');
+      const res = await fetch('/api/accessory-types');
       if (res.ok) {
         const data = await res.json();
         const list = data.accessoryTypes || (Array.isArray(data) ? data : []);
@@ -68,7 +68,7 @@ export default function AccessoryTypesAdminPage() {
     const trimmed = newTypeName.trim();
     if (!trimmed) return;
 
-    fetch('http://localhost:5000/api/accessory-types', {
+    fetch('/api/accessory-types', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ export default function AccessoryTypesAdminPage() {
     e.preventDefault();
     if (!editingType || !editTypeName.trim()) return;
 
-    fetch(`http://localhost:5000/api/accessory-types/${editingType.id}`, {
+    fetch(`/api/accessory-types/${editingType.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ export default function AccessoryTypesAdminPage() {
   const confirmExecuteRemoveType = () => {
     if (!deleteTarget) return;
 
-    fetch(`http://localhost:5000/api/accessory-types/${deleteTarget.id}`, {
+    fetch(`/api/accessory-types/${deleteTarget.id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${auth.token}` }
     })
