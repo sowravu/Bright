@@ -129,29 +129,9 @@ function ProductsCatalog() {
     }
   };
 
-  // Handle Quick Add to Cart
+  // Handle Quick Add to Cart (Locked - Coming Soon)
   const handleQuickAdd = (prod: any) => {
-    const defaultVar = prod.variants?.[0] || {};
-    const defaultColor = defaultVar.color || prod.colorVariants?.[0] || 'Standard';
-    const defaultRam = defaultVar.ram || prod.ramVariants?.[0] || '';
-    const defaultStorage = defaultVar.storage || prod.storageVariants?.[0] || '';
-
-    dispatch(
-      addToCart({
-        id: `${prod.id}-${defaultColor}-${defaultRam}`,
-        productId: prod.id,
-        variantId: defaultVar._id || defaultVar.id || '',
-        name: prod.name,
-        brand: typeof prod.brand === 'string' ? prod.brand : (prod.brand?.name || 'Smart'),
-        color: defaultColor,
-        ram: defaultRam,
-        storage: defaultStorage,
-        price: prod.discountPrice || prod.basePrice,
-        image: prod.images[0],
-        quantity: 1,
-      })
-    );
-    showToast(`Added "${prod.name}" to cart!`, 'success');
+    showToast('Coming Soon! Please choose Enquiry button to buy this product.', 'info');
   };
 
   return (

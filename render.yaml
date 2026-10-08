@@ -1,0 +1,52 @@
+services:
+  # ==========================================
+  # 1. Bright Backend API (Express + MongoDB)
+  # ==========================================
+  - type: web
+    name: bright-backend
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CLIENT_URL
+        sync: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_APP_PASSWORD
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+
+  # ==========================================
+  # 2. Bright Frontend (Next.js App)
+  # ==========================================
+  - type: web
+    name: bright-frontend
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BACKEND_URL
+        sync: false
+      - key: NEXT_PUBLIC_BACKEND_URL
+        sync: false

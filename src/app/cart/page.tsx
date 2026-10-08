@@ -6,9 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
 import { updateQuantity, removeFromCart, applyCoupon, clearCart } from '../../store/cartSlice';
-import { 
-  Trash2, ShoppingBag, Plus, Minus, CreditCard, Ticket, 
-  MapPin, CheckCircle, Gift, Sparkles, Map, ChevronRight 
+import {
+  Trash2, ShoppingBag, Plus, Minus, CreditCard, Ticket,
+  MapPin, CheckCircle, Gift, Sparkles, Map, ChevronRight
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import styles from './cart.module.css';
@@ -62,7 +62,7 @@ export default function CartPage() {
 
   // Calculators
   const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  
+
   let discount = 0;
   if (cart.coupon) {
     if (cart.coupon.isPercent) {
@@ -404,14 +404,14 @@ export default function CartPage() {
 
                   {/* Quantity adjustments */}
                   <div className={styles.quantityControls}>
-                    <button 
+                    <button
                       onClick={() => dispatch(updateQuantity({ productId: item.productId, variantId: item.variantId, quantity: Math.max(item.quantity - 1, 1) }))}
                       className={styles.qtyBtn}
                     >
                       <Minus size={14} />
                     </button>
                     <span>{item.quantity}</span>
-                    <button 
+                    <button
                       onClick={() => dispatch(updateQuantity({ productId: item.productId, variantId: item.variantId, quantity: item.quantity + 1 }))}
                       className={styles.qtyBtn}
                     >
@@ -419,7 +419,7 @@ export default function CartPage() {
                     </button>
                   </div>
 
-                  <button 
+                  <button
                     onClick={() => dispatch(removeFromCart({ productId: item.productId, variantId: item.variantId }))}
                     className={styles.deleteBtn}
                   >
@@ -477,15 +477,9 @@ export default function CartPage() {
                   <span>₹{netAmount.toLocaleString()}</span>
                 </div>
 
-                {auth.isAuthenticated ? (
-                  <button onClick={() => setShowCheckout(true)} className="btn btnPrimary" style={{ width: '100%', marginTop: '20px' }}>
-                    Proceed to Checkout
-                  </button>
-                ) : (
-                  <Link href="/login?redirect=cart" className="btn btnSecondary" style={{ width: '100%', marginTop: '20px', textAlign: 'center' }}>
-                    Sign In to Checkout
-                  </Link>
-                )}
+                <button onClick={() => showToast('Coming Soon! Please choose Enquiry button to buy this product.', 'info')} className="btn btnPrimary" style={{ width: '100%', marginTop: '20px' }}>
+                  Proceed to Checkout
+                </button>
               </div>
             </div>
           </div>
@@ -496,7 +490,7 @@ export default function CartPage() {
           <CheckCircle size={64} className={styles.successIcon} />
           <h2>Order Confirmed!</h2>
           <p>Thank you for choosing Bright. Your order has been registered in our database.</p>
-          
+
           <div className={styles.receiptCard}>
             <h3>Receipt Summary</h3>
             <div className={styles.receiptRow}>
@@ -556,7 +550,7 @@ export default function CartPage() {
             {checkoutStep === 1 && (
               <div className={styles.stepBox}>
                 <h3>Shipping details</h3>
-                
+
                 <div className={styles.formRowGrid}>
                   <div className={styles.inputGroup}>
                     <label>Full Name</label>

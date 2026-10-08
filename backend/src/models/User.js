@@ -50,13 +50,17 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['USER', 'EMPLOYEE', 'ADMIN'],
+      enum: ['USER', 'EMPLOYEE', 'ADMIN', 'user', 'employee', 'admin'],
       default: 'USER',
+      uppercase: true,
+      set: (v) => (typeof v === 'string' ? v.toUpperCase() : v),
     },
     status: {
       type: String,
-      enum: ['ACTIVE', 'BLOCKED'],
+      enum: ['ACTIVE', 'BLOCKED', 'active', 'blocked'],
       default: 'ACTIVE',
+      uppercase: true,
+      set: (v) => (typeof v === 'string' ? v.toUpperCase() : v),
     },
     addresses: [addressSchema],
 
@@ -102,6 +106,33 @@ const userSchema = new mongoose.Schema(
 );
 
 /**
+ * Automatically normalize role and status when loaded from MongoDB
+ */
+userSchema.post('init', function () {
+  if (this.role && typeof this.role === 'string') {
+    this.role = this.role.toUpperCase();
+  }
+  if (this.status && typeof this.status === 'string') {
+    this.status = this.status.toUpperCase();
+  } else if (!this.status && this.isBlocked !== undefined) {
+    this.status = this.isBlocked ? 'BLOCKED' : 'ACTIVE';
+  }
+});
+
+/**
+ * Automatically normalize role and status before validation
+ */
+userSchema.pre('validate', function (next) {
+  if (this.role && typeof this.role === 'string') {
+    this.role = this.role.toUpperCase();
+  }
+  if (this.status && typeof this.status === 'string') {
+    this.status = this.status.toUpperCase();
+  }
+  next();
+});
+
+/**
  * Hash password before saving whenever it has been modified.
  */
 userSchema.pre('save', async function hashPassword(next) {
@@ -130,8 +161,8 @@ userSchema.methods.toAuthJSON = function toAuthJSON() {
     id: this._id.toString(),
     email: this.email,
     name: this.name,
-    role: this.role,
-    status: this.status || 'ACTIVE',
+    role: (this.role || 'USER').toUpperCase(),
+    status: (this.status || 'ACTIVE').toUpperCase(),
     phone: this.phone || undefined,
     avatar: this.avatar || undefined,
     googleId: this.googleId || undefined,

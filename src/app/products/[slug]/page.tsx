@@ -5,8 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../store';
 import { addToCart } from '../../../store/cartSlice';
-import { 
-  Star, ShieldAlert, Truck, ChevronRight, ShoppingCart, 
+import {
+  Star, ShieldAlert, Truck, ChevronRight, ShoppingCart,
   HelpCircle, RefreshCcw, Smartphone, BadgePercent, MessageSquare
 } from 'lucide-react';
 import styles from './details.module.css';
@@ -172,7 +172,7 @@ export default function ProductDetails() {
           const data = await res.json();
           setProduct(data);
           setReviewsList(data.reviews || []);
-          
+
           const isAcc = checkIsAccessory(data);
 
           // Set initial variants configurations
@@ -183,7 +183,7 @@ export default function ProductDetails() {
             setSelectedStorage(data.variants[0].storage || (data.storageVariants && data.storageVariants[0]) || data.specifications?.storage || data.specs?.storage || '');
             setSelectedPrice(parseFloat(data.variants[0].discountPrice || data.variants[0].price || data.discountPrice || data.price || 0));
             setSelectedStock(data.variants[0].stock !== undefined ? data.variants[0].stock : (data.stock !== undefined ? data.stock : 10));
-            
+
             const colorImg = data.variants[0].image || data.colorImages?.[initColor] || data.colorImages?.[data.colorVariants?.find((c: string) => c.toLowerCase() === (initColor || '').toLowerCase()) || ''] || data.colorImages?.[data.colors?.find((c: string) => c.toLowerCase() === (initColor || '').toLowerCase()) || ''];
             if (colorImg) {
               setColorImageOverride(colorImg);
@@ -228,7 +228,7 @@ export default function ProductDetails() {
           setSelectedStorage('');
           setSelectedPrice(parseFloat((clonedMatch.discountPrice || clonedMatch.basePrice || clonedMatch.price || 0).toString()));
           setSelectedStock(clonedMatch.stock !== undefined ? clonedMatch.stock : 15);
-          
+
           const colorImg = clonedMatch.colorImages?.[defaultColor] || clonedMatch.colorImages?.[clonedMatch.colors?.find((c: string) => c.toLowerCase() === defaultColor.toLowerCase()) || ''];
           if (colorImg) {
             setColorImageOverride(colorImg);
@@ -241,11 +241,11 @@ export default function ProductDetails() {
           const colors = clonedMatch.colors && clonedMatch.colors.length > 0 ? clonedMatch.colors : ['Default'];
           let idCounter = 1;
           colors.forEach((col: string, colIdx: number) => {
-            const colorPriceMultiplier = colIdx === 1 ? 1.05 : 1.0; 
-            
+            const colorPriceMultiplier = colIdx === 1 ? 1.05 : 1.0;
+
             // Vary stock levels across color indexes to make some colors in-stock and others out-of-stock
-            const baseStock = colIdx === 0 ? 10 : 0; 
-            const variantStock = colIdx === 0 ? 0 : 8; 
+            const baseStock = colIdx === 0 ? 10 : 0;
+            const variantStock = colIdx === 0 ? 0 : 8;
 
             createdVariants.push({
               id: `v-auto-${idCounter++}`,
@@ -279,7 +279,7 @@ export default function ProductDetails() {
         setSelectedStorage(defaultStorage);
         setSelectedPrice(parseFloat((clonedMatch.discountPrice || clonedMatch.basePrice || 0).toString()));
         setSelectedStock(clonedMatch.variants[0].stock !== undefined ? clonedMatch.variants[0].stock : clonedMatch.stock);
-        
+
         const colorImg = clonedMatch.colorImages?.[defaultColor] || clonedMatch.colorImages?.[clonedMatch.colors?.find((c: string) => c.toLowerCase() === defaultColor.toLowerCase()) || ''];
         if (colorImg) {
           setColorImageOverride(colorImg);
@@ -294,12 +294,12 @@ export default function ProductDetails() {
         name: isLava ? 'Lava Agni 2 5G' : 'Vivo X100 Pro',
         brand: { name: isLava ? 'Lava' : 'Vivo' },
         stock: isLava ? 50 : 15,
-        description: isLava 
+        description: isLava
           ? 'India\'s absolute disruptor. Featuring a premium curved AMOLED panel, Dimensity 7050, and sleek glass design.'
           : 'Co-engineered with ZEISS optics, the Vivo X100 Pro brings professional photography to your pocket.',
         basePrice: isLava ? 25999 : 89999,
         discountPrice: isLava ? 19999 : 84999,
-        images: isLava 
+        images: isLava
           ? ['https://images.unsplash.com/photo-1557180295-76eee20ae8aa?q=80&w=600']
           : ['https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=600', 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=600'],
         colors: baseColors,
@@ -314,27 +314,27 @@ export default function ProductDetails() {
           ram: isLava ? '8GB' : '12GB',
           storage: '256GB'
         },
-        variants: isLava 
+        variants: isLava
           ? [
-              { id: 'v1', color: 'Viridian Glass', ram: '8GB', storage: '256GB', price: 25999, discountPrice: 19999, stock: 12 },
-              { id: 'v2', color: 'Viridian Glass', ram: '12GB', storage: '512GB', price: 29999, discountPrice: 23999, stock: 0 }
-            ]
+            { id: 'v1', color: 'Viridian Glass', ram: '8GB', storage: '256GB', price: 25999, discountPrice: 19999, stock: 12 },
+            { id: 'v2', color: 'Viridian Glass', ram: '12GB', storage: '512GB', price: 29999, discountPrice: 23999, stock: 0 }
+          ]
           : [
-              { id: 'v1', color: 'Sunset Blue', ram: '12GB', storage: '256GB', price: 89999, discountPrice: 84999, stock: 15 },
-              { id: 'v2', color: 'Sunset Blue', ram: '16GB', storage: '512GB', price: 94999, discountPrice: 89999, stock: 0 },
-              { id: 'v3', color: 'Asteroid Black', ram: '12GB', storage: '256GB', price: 92999, discountPrice: 87999, stock: 5 },
-              { id: 'v4', color: 'Asteroid Black', ram: '16GB', storage: '512GB', price: 97999, discountPrice: 92999, stock: 0 }
-            ],
+            { id: 'v1', color: 'Sunset Blue', ram: '12GB', storage: '256GB', price: 89999, discountPrice: 84999, stock: 15 },
+            { id: 'v2', color: 'Sunset Blue', ram: '16GB', storage: '512GB', price: 94999, discountPrice: 89999, stock: 0 },
+            { id: 'v3', color: 'Asteroid Black', ram: '12GB', storage: '256GB', price: 92999, discountPrice: 87999, stock: 5 },
+            { id: 'v4', color: 'Asteroid Black', ram: '16GB', storage: '512GB', price: 97999, discountPrice: 92999, stock: 0 }
+          ],
         accessories: [
           { accessoryName: 'SuperShield Tempered Glass', accessoryPrice: 499, accessoryImage: '' },
           { accessoryName: 'Premium Matte Back Case', accessoryPrice: 299, accessoryImage: '' }
         ],
-        colorImages: isLava 
+        colorImages: isLava
           ? { 'Viridian Glass': 'https://images.unsplash.com/photo-1557180295-76eee20ae8aa?q=80&w=600' }
           : {
-              'Sunset Blue': 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=600',
-              'Asteroid Black': 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=600'
-            }
+            'Sunset Blue': 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=600',
+            'Asteroid Black': 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=600'
+          }
       };
       setProduct(mockProduct);
       setReviewsList([
@@ -345,7 +345,7 @@ export default function ProductDetails() {
       setSelectedStorage(mockProduct.variants[0].storage);
       setSelectedPrice(mockProduct.variants[0].discountPrice || mockProduct.variants[0].price);
       setSelectedStock(mockProduct.variants[0].stock !== undefined ? mockProduct.variants[0].stock : mockProduct.stock);
-      
+
       const initColor = mockProduct.colors[0];
       const colorImagesMap = mockProduct.colorImages as any;
       const colorImg = colorImagesMap?.[initColor] || colorImagesMap?.[mockProduct.colors?.find((c: string) => c.toLowerCase() === initColor.toLowerCase()) || ''];
@@ -421,7 +421,7 @@ export default function ProductDetails() {
     setSelectedStorage(matched.storage || newStorage);
     setSelectedPrice(parseFloat(matched.discountPrice || matched.price || product.discountPrice || product.price || 0));
     setSelectedStock(matched.stock !== undefined ? matched.stock : product.stock);
-    
+
     const colorImg = matched.image || product.colorImages?.[matched.color || newColor] || product.colorImages?.[product.colors?.find((c: string) => c.toLowerCase() === (matched.color || newColor).toLowerCase()) || ''];
     if (colorImg) {
       setColorImageOverride(colorImg);
@@ -478,78 +478,9 @@ export default function ProductDetails() {
     );
   };
 
-  // Add items to cart
+  // Add items to cart (Locked - Coming Soon)
   const handleCartAdd = (redirect: boolean) => {
-    if (!product) return;
-
-    // Find the exact matching variant ID
-    let activeVariantId = '';
-    if (product.variants && product.variants.length > 0) {
-      let matched: any = null;
-      if (isAccessory) {
-        matched = product.variants.find(
-          (v: any) => v.color && selectedColor && v.color.toLowerCase() === selectedColor.toLowerCase()
-        ) || product.variants[0];
-      } else {
-        matched = product.variants.find(
-          (v: any) =>
-            (!v.color || !selectedColor || v.color.toLowerCase() === selectedColor.toLowerCase()) &&
-            (!selectedRam || !v.ram || v.ram === selectedRam) &&
-            (!selectedStorage || !v.storage || v.storage === selectedStorage)
-        ) || product.variants.find(
-          (v: any) => v.color && selectedColor && v.color.toLowerCase() === selectedColor.toLowerCase()
-        ) || product.variants[0];
-      }
-      if (matched) {
-        activeVariantId = matched._id || matched.id || '';
-      }
-    }
-
-    const itemName = isAccessory
-      ? `${product.name}${selectedColor ? ` (${selectedColor})` : ''}`
-      : `${product.name}${selectedRam || selectedStorage ? ` (${selectedRam}${selectedStorage ? `/${selectedStorage}` : ''})` : ''}`;
-
-    // 1. Add Main Phone / Accessory Variant
-    dispatch(
-      addToCart({
-        productId: product._id || product.id,
-        variantId: activeVariantId,
-        name: itemName,
-        image: colorImageOverride || product.images?.[0] || '',
-        brand: product.brand?.name || (typeof product.brand === 'string' ? product.brand : 'Smart'),
-        ram: selectedRam || '',
-        storage: selectedStorage || '',
-        color: selectedColor || '',
-        price: selectedPrice,
-        quantity: 1
-      })
-    );
-
-    // 2. Add Checked Accessories
-    checkedAccessories.forEach((accName) => {
-      const acc = product.accessories.find((a: any) => a.accessoryName === accName);
-      if (acc) {
-        dispatch(
-          addToCart({
-            productId: `acc-${accName}`,
-            name: `${accName} (Accessory for ${product.name})`,
-            image: 'https://images.unsplash.com/photo-1616422285623-13ff0162193c?q=80&w=150',
-            brand: product.brand?.name || 'Smart',
-            ram: '',
-            storage: '',
-            color: 'Default',
-            price: parseFloat(acc.accessoryPrice),
-            quantity: 1
-          })
-        );
-      }
-    });
-
-    if (redirect) {
-      router.push('/cart');
-    } else {
-      showToast(`${product.name} and accessories added to cart!`, 'success');
-    }
+    showToast('Coming Soon! Please choose Enquiry button to buy this product.', 'info');
   };
 
   // WhatsApp Enquiry handler
@@ -782,9 +713,8 @@ export default function ProductDetails() {
                           }
                         }
                       }}
-                      className={`${styles.colorSelectorBtn} ${isSelected ? styles.activeColorBtn : ''} ${
-                        isOutOfStock ? styles.outOfStockColorBtn : ''
-                      }`}
+                      className={`${styles.colorSelectorBtn} ${isSelected ? styles.activeColorBtn : ''} ${isOutOfStock ? styles.outOfStockColorBtn : ''
+                        }`}
                       title={isOutOfStock ? `${col} (Out of Stock)` : col}
                     >
                       {col} {isOutOfStock && ' (Out of Stock)'}
@@ -814,14 +744,13 @@ export default function ProductDetails() {
                   const discountPercent = hasDiscount ? Math.round(((baseP - discP) / baseP) * 100) : 0;
                   const isSelected = selectedRam === v.ram && selectedStorage === v.storage;
                   const isOutOfStock = matchedVar.stock === 0;
-                  
+
                   return (
                     <button
                       key={idx}
                       onClick={() => updateSelection(selectedColor, v.ram, v.storage)}
-                      className={`${styles.variantSelectorCard} ${
-                        isSelected ? styles.activeVariantCard : ''
-                      } ${isOutOfStock ? styles.outOfStockVariantCard : ''}`}
+                      className={`${styles.variantSelectorCard} ${isSelected ? styles.activeVariantCard : ''
+                        } ${isOutOfStock ? styles.outOfStockVariantCard : ''}`}
                     >
                       <div className={styles.varTitle}>{v.storage} + {v.ram}</div>
                       {hasDiscount && (
@@ -869,9 +798,8 @@ export default function ProductDetails() {
                           if (colorImg) setColorImageOverride(colorImg);
                         }
                       }}
-                      className={`${styles.variantSelectorCard} ${
-                        isSelected ? styles.activeVariantCard : ''
-                      } ${isOutOfStock ? styles.outOfStockVariantCard : ''}`}
+                      className={`${styles.variantSelectorCard} ${isSelected ? styles.activeVariantCard : ''
+                        } ${isOutOfStock ? styles.outOfStockVariantCard : ''}`}
                     >
                       <div className={styles.varTitle}>{title}</div>
                       {hasDiscount && (
