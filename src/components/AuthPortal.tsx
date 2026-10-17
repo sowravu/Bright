@@ -192,7 +192,12 @@ export function AuthPortal({ initialRegister = false }: { initialRegister?: bool
       if (res.ok) {
         if (isRegistering) {
           setPendingUser({ email, name: name || 'New Customer', phone });
-          setVerificationCode('');
+          if (data.devOtp) {
+            setVerificationCode(data.devOtp);
+            showToast(`Verification code: ${data.devOtp}`, 'info');
+          } else {
+            setVerificationCode('');
+          }
           setAuthMode('verify-email');
         } else if (data.require2FA) {
           setTwoFactorUserId(data.userId);

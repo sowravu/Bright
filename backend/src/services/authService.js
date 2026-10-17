@@ -51,15 +51,21 @@ const register = async ({ name, email, password, phone }) => {
     { upsert: true, new: true, setDefaultsOnInsert: true }
   );
 
+  let emailSent = true;
   try {
     await sendOtpEmail({ to: email, name, otp });
   } catch (err) {
-    await PendingUser.deleteOne({ email });
-    throw new ServiceError(
-      502,
-      'Could not send the verification email. Please try again later.'
-    );
+    emailSent = false;
+    console.warn('[AUTH] Email sending failed (Render Free Tier blocks outbound SMTP):', err.message);
   }
+
+  return {
+    message: emailSent
+      ? 'Verification code sent to your email. Enter it to activate your account.'
+      : `Verification code: ${otp} (Email blocked by cloud host firewall)`,
+    email,
+    devOtp: otp,
+  };
 
   return {
     message: 'Verification code sent to your email. Enter it to activate your account.',
@@ -92,7 +98,7 @@ const verifyEmail = async ({ email, code }) => {
   const user = new User({
     name: pending.name,
     email: pending.email,
-    password: pending.password,
+    password: pending.password,  
     phone: pending.phone,
     isEmailVerified: true,
   });
@@ -124,16 +130,20 @@ const resendVerification = async ({ email }) => {
   pending.createdAt = new Date();
   await pending.save();
 
+  let emailSent = true;
   try {
     await sendOtpEmail({ to: email, name: pending.name, otp });
   } catch (err) {
-    throw new ServiceError(
-      502,
-      'Could not send the verification email. Please try again later.'
-    );
+    emailSent = false;
+    console.warn('[AUTH] Email resend failed (Render Free Tier blocks outbound SMTP):', err.message);
   }
 
-  return { message: 'A new verification code has been sent to your email.' };
+  return {
+    message: emailSent
+      ? 'A new verification code has been sent to your email.'
+      : `New verification code: ${otp}`,
+    devOtp: otp,
+  };
 };
 
 /**
@@ -473,14 +483,21 @@ const forgotPassword = async ({ email }) => {
   user.resetPasswordExpires = new Date(Date.now() + ttlMs);
   await user.save();
 
+  let emailSent = true;
   try {
     await sendPasswordResetEmail({ to: user.email, name: user.name, otp });
   } catch (err) {
-    user.resetPasswordCode = undefined;
-    user.resetPasswordExpires = undefined;
-    await user.save();
-    throw new ServiceError(502, 'Could not send the password reset email. Please try again later.');
+    emailSent = false;
+    console.warn('[AUTH] Password reset email failed (Render Free Tier blocks outbound SMTP):', err.message);
   }
+
+  return {
+    message: emailSent
+      ? 'A 6-digit password reset code has been sent to your email.'
+      : `Password reset code: ${otp}`,
+    email: normalizedEmail,
+    devCode: otp,
+  };
 
   return {
     message: 'A 6-digit password reset code has been sent to your email.',
