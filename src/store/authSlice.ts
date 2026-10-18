@@ -13,7 +13,6 @@ interface User {
 }
 
 interface AuthState {
-  token: string | null;
   user: User | null;
   isAuthenticated: boolean;
   /**
@@ -26,7 +25,6 @@ interface AuthState {
 }
 
 const initialState: AuthState = {
-  token: null,
   user: null,
   isAuthenticated: false,
   hydrated: false,
@@ -36,21 +34,20 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setCredentials(state, action: PayloadAction<{ token: string; user: User }>) {
-      state.token = action.payload.token;
+    setCredentials(state, action: PayloadAction<{ user: User; token?: string }>) {
       state.user = action.payload.user;
       state.isAuthenticated = true;
       if (typeof window !== 'undefined') {
         try {
-          localStorage.setItem('bright_token', action.payload.token);
+          // Token is securely handled by httpOnly cookies — clean up any legacy bright_token
+          localStorage.removeItem('bright_token');
           localStorage.setItem('bright_user', JSON.stringify(action.payload.user));
         } catch (error) {
-          console.warn('Failed to save auth to localStorage:', error);
+          console.warn('Failed to save user to localStorage:', error);
         }
       }
     },
     logout(state) {
-      state.token = null;
       state.user = null;
       state.isAuthenticated = false;
       if (typeof window !== 'undefined') {
@@ -63,10 +60,10 @@ const authSlice = createSlice({
     rehydrate(state) {
       if (typeof window !== 'undefined') {
         try {
-          const token = localStorage.getItem('bright_token');
+          // Clean up any exposed token from localStorage
+          localStorage.removeItem('bright_token');
           const userJson = localStorage.getItem('bright_user');
-          if (token && userJson) {
-            state.token = token;
+          if (userJson) {
             state.user = JSON.parse(userJson);
             state.isAuthenticated = true;
           }

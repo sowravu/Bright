@@ -35,16 +35,12 @@ export default function OrdersAdminPage() {
 
   useEffect(() => {
     fetchOrders();
-  }, [auth.token]);
+  }, [auth.isAuthenticated]);
 
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/orders', {
-        headers: {
-          'Authorization': `Bearer ${auth.token}`
-        }
-      });
+      const res = await fetch('/api/admin/orders');
       if (res.ok) {
         const data = await res.json();
         setOrders(data);
@@ -69,7 +65,6 @@ export default function OrdersAdminPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth.token}`
         },
         body: JSON.stringify({
           orderStatus: newStatus,
@@ -106,7 +101,6 @@ export default function OrdersAdminPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth.token}`
         },
         body: JSON.stringify({
           estimatedDeliveryDate: estDate

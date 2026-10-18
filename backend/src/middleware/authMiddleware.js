@@ -8,10 +8,12 @@ const User = require('../models/User');
  */
 const protect = async (req, res, next) => {
   let token;
-  const authHeader = req.headers.authorization;
 
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    token = authHeader.split(' ')[1];
+  // Check httpOnly cookie first, then fall back to Bearer header
+  if (req.cookies && req.cookies.token) {
+    token = req.cookies.token;
+  } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    token = req.headers.authorization.split(' ')[1];
   }
 
   if (!token) {

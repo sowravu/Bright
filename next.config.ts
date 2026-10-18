@@ -6,10 +6,11 @@ const nextConfig: NextConfig = {
   // Allow Cloudflare Quick Tunnel hostnames to access Next.js dev assets.
   allowedDevOrigins: ["*.trycloudflare.com"],
   async rewrites() {
-    const backendUrl =
+    const rawBackendUrl =
       process.env.BACKEND_URL ||
       process.env.NEXT_PUBLIC_BACKEND_URL ||
       "http://localhost:5000";
+    const backendUrl = rawBackendUrl.replace(/\/+$/, "");
 
     return [
       {

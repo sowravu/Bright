@@ -33,19 +33,17 @@ export default function AnalyticsAdminPage() {
   useEffect(() => {
     const fetchAdminStats = async () => {
       try {
-        const res = await fetch('/api/admin/analytics', {
-          headers: { 'Authorization': `Bearer ${auth.token}` }
-        });
+        const res = await fetch('/api/admin/analytics');
         if (res.ok) {
           const data = await res.json();
           setAnalytics(data);
         }
       } catch (_) {}
     };
-    if (auth.token) {
+    if (auth.isAuthenticated) {
       fetchAdminStats();
     }
-  }, [auth.token]);
+  }, [auth.isAuthenticated]);
 
   return (
     <div className={styles.dashboardContainer}>

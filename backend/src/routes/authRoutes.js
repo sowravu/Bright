@@ -22,6 +22,7 @@ router.post('/2fa/verify', twoFactorValidator, handleValidation, authController.
 router.post('/google', authController.googleLogin);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
+router.post('/logout', authController.logout);
 
 // ---- Protected Profile & Address Management ----
 router.get('/profile', protect, authController.getProfile);

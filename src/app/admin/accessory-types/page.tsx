@@ -72,7 +72,6 @@ export default function AccessoryTypesAdminPage() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${auth.token}`
       },
       body: JSON.stringify({
         name: trimmed,
@@ -98,7 +97,6 @@ export default function AccessoryTypesAdminPage() {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${auth.token}`
       },
       body: JSON.stringify({
         name: editTypeName.trim(),
@@ -118,7 +116,6 @@ export default function AccessoryTypesAdminPage() {
 
     fetch(`/api/accessory-types/${deleteTarget.id}`, {
       method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${auth.token}` }
     })
       .then(() => fetchDbAccessoryTypes())
       .catch(() => {});

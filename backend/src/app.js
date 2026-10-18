@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 
 const authRoutes = require('./routes/authRoutes');
 const brandRoutes = require('./routes/brandRoutes');
@@ -27,6 +28,7 @@ app.use(
 // Body parsing with 50MB payload limit for base64 image uploads
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(cookieParser());
 
 // Serve uploaded static files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

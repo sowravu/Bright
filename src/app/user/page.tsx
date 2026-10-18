@@ -71,9 +71,7 @@ export default function UserDashboard() {
       // Fetch user profile and saved addresses from MongoDB once
       const fetchUserData = async () => {
         try {
-          const profileRes = await fetch('/api/auth/profile', {
-            headers: { 'Authorization': `Bearer ${auth.token}` }
-          });
+          const profileRes = await fetch('/api/auth/profile');
           if (profileRes.ok) {
             const userData = await profileRes.json();
             dispatch(updateUser(userData));
@@ -84,17 +82,13 @@ export default function UserDashboard() {
             }
           }
 
-          const addrRes = await fetch('/api/auth/addresses', {
-            headers: { 'Authorization': `Bearer ${auth.token}` }
-          });
+          const addrRes = await fetch('/api/auth/addresses');
           if (addrRes.ok) {
             const addrs = await addrRes.json();
             setAddresses(addrs);
           }
 
-          const ordersRes = await fetch('/api/orders/my-orders', {
-            headers: { 'Authorization': `Bearer ${auth.token}` }
-          });
+          const ordersRes = await fetch('/api/orders/my-orders');
           if (ordersRes.ok) {
             const userOrders = await ordersRes.json();
             setOrders(userOrders);
@@ -107,7 +101,7 @@ export default function UserDashboard() {
       };
       fetchUserData();
     }
-  }, [auth.hydrated, auth.isAuthenticated, auth.token, router, dispatch]);
+  }, [auth.hydrated, auth.isAuthenticated, router, dispatch]);
 
   // Save Name Handler
   const handleSaveName = async () => {
@@ -118,10 +112,7 @@ export default function UserDashboard() {
     try {
       const res = await fetch('/api/auth/profile', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth.token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: editedName.trim() })
       });
       if (res.ok) {
@@ -149,10 +140,7 @@ export default function UserDashboard() {
     try {
       const res = await fetch('/api/auth/profile', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth.token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: editedPhone.trim() })
       });
       if (res.ok) {
@@ -190,10 +178,7 @@ export default function UserDashboard() {
     try {
       const res = await fetch('/api/auth/change-password', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth.token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentPassword: userHasPassword ? currentPassword : undefined, newPassword })
       });
       if (res.ok) {
@@ -227,10 +212,7 @@ export default function UserDashboard() {
     try {
       const res = await fetch('/api/auth/addresses', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth.token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           label: addrLabel,
           street: addrStreet,
@@ -265,9 +247,6 @@ export default function UserDashboard() {
     try {
       const res = await fetch(`/api/auth/addresses/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${auth.token}`
-        }
       });
       if (res.ok) {
         const updatedAddrs = await res.json();
@@ -288,10 +267,6 @@ export default function UserDashboard() {
     try {
       const res = await fetch('/api/auth/2fa/toggle', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth.token}`
-        }
       });
       if (res.ok) {
         const data = await res.json();
@@ -315,10 +290,6 @@ export default function UserDashboard() {
     try {
       const res = await fetch(`/api/orders/${orderId}/cancel`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth.token}`
-        }
       });
       if (res.ok) {
         setOrders((prev) =>

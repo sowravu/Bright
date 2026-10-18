@@ -12,6 +12,28 @@ const asyncHandler = (fn) => (req, res, next) => {
  */
 const send = (res, statusCode, payload) => res.status(statusCode).json(payload);
 
+const setAuthCookie = (res, token) => {
+  if (!token) return;
+  const isProduction = process.env.NODE_ENV === 'production';
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
+};
+
+const clearAuthCookie = (res) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: 'lax',
+    path: '/',
+  });
+};
+
 // POST /api/auth/register
 const register = asyncHandler(async (req, res) => {
   const { name, email, password, phone } = req.body;
@@ -29,6 +51,7 @@ const verifyEmail = asyncHandler(async (req, res) => {
   const { email, code } = req.body;
   try {
     const result = await authService.verifyEmail({ email, code });
+    if (result && result.token) setAuthCookie(res, result.token);
     return send(res, 200, result);
   } catch (err) {
     if (err.statusCode) return send(res, err.statusCode, { message: err.message });
@@ -53,6 +76,7 @@ const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   try {
     const result = await authService.login({ email, password });
+    if (result && result.token) setAuthCookie(res, result.token);
     return send(res, 200, result);
   } catch (err) {
     if (err.statusCode) return send(res, err.statusCode, { message: err.message });
@@ -65,6 +89,7 @@ const verifyTwoFactor = asyncHandler(async (req, res) => {
   const { userId, code } = req.body;
   try {
     const result = await authService.verifyTwoFactor({ userId, code });
+    if (result && result.token) setAuthCookie(res, result.token);
     return send(res, 200, result);
   } catch (err) {
     if (err.statusCode) return send(res, err.statusCode, { message: err.message });
@@ -147,6 +172,7 @@ const googleLogin = asyncHandler(async (req, res) => {
   const { idToken, gUser } = req.body;
   try {
     const result = await authService.googleLogin({ idToken, gUser });
+    if (result && result.token) setAuthCookie(res, result.token);
     return send(res, 200, result);
   } catch (err) {
     if (err.statusCode) return send(res, err.statusCode, { message: err.message });
@@ -171,11 +197,18 @@ const resetPassword = asyncHandler(async (req, res) => {
   const { email, code, newPassword } = req.body;
   try {
     const result = await authService.resetPassword({ email, code, newPassword });
+    if (result && result.token) setAuthCookie(res, result.token);
     return send(res, 200, result);
   } catch (err) {
     if (err.statusCode) return send(res, err.statusCode, { message: err.message });
     throw err;
   }
+});
+
+// POST /api/auth/logout
+const logout = asyncHandler(async (req, res) => {
+  clearAuthCookie(res);
+  return send(res, 200, { message: 'Logged out successfully' });
 });
 
 module.exports = {
@@ -193,4 +226,5 @@ module.exports = {
   addAddress,
   deleteAddress,
   changePassword,
+  logout,
 };

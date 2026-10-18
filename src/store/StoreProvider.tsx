@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { Provider } from 'react-redux';
 import { store } from './index';
 import { ThemeProvider } from '../context/ThemeContext';
-import { rehydrate as rehydrateAuth } from './authSlice';
+import { rehydrate as rehydrateAuth, logout, updateUser } from './authSlice';
 import { rehydrate as rehydrateCart } from './cartSlice';
 import { rehydrate as rehydrateProducts } from './productsSlice';
 import { rehydrateBanner, setBanner } from './bannerSlice';
@@ -19,6 +19,25 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     store.dispatch(rehydrateCart());
     store.dispatch(rehydrateProducts());
     store.dispatch(rehydrateBanner());
+
+    // Verify session with backend httpOnly cookie
+    fetch('/api/auth/profile')
+      .then((res) => {
+        if (res.ok) return res.json();
+        if (res.status === 401 || res.status === 403) {
+          const state = store.getState();
+          if (state.auth.isAuthenticated) {
+            store.dispatch(logout());
+          }
+        }
+        return null;
+      })
+      .then((user) => {
+        if (user) {
+          store.dispatch(updateUser(user));
+        }
+      })
+      .catch(() => {});
 
     // Fetch live banner from backend if available
     fetch('/api/banner')

@@ -30,7 +30,7 @@ Every page tries `fetch('http://localhost:5000/api/...')` first, and on any fail
 
 ### State: Redux store (`src/store/`)
 - `index.ts` — combines `auth`, `cart`, `compare`, `products` reducers.
-- `authSlice.ts` — user/token, persisted to `localStorage` (`bright_token`, `bright_user`). Roles: `USER`, `EMPLOYEE`, `ADMIN`.
+- `authSlice.ts` — user/session state; JWT is securely stored in `httpOnly` cookie (`token`), user profile cached in `localStorage` (`bright_user`). Roles: `USER`, `EMPLOYEE`, `ADMIN`.
 - `cartSlice.ts` — cart items + coupon, persisted to `localStorage` (`bright_cart`).
 - `productsSlice.ts` — the entire product catalog (~28 seeded smartphones/accessories) lives here as `initialFallbackProducts`, persisted to `localStorage` (`bright_products`) once modified. Admin-added products get prepended here, which is why they immediately show up across Products/Accessories/Search.
 - `compareSlice.ts` — up to 4 products for the comparison matrix (not persisted).

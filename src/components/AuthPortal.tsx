@@ -395,14 +395,14 @@ export function AuthPortal({ initialRegister = false }: { initialRegister?: bool
             {authMode === '2fa'
               ? '2-Factor Check'
               : authMode === 'verify-email'
-              ? 'Verify Your Email'
-              : authMode === 'forgot-password'
-              ? 'Forgot Password'
-              : authMode === 'reset-password'
-              ? 'Reset Password'
-              : isRegistering
-              ? 'Register on Bright'
-              : 'Welcome to Bright'}
+                ? 'Verify Your Email'
+                : authMode === 'forgot-password'
+                  ? 'Forgot Password'
+                  : authMode === 'reset-password'
+                    ? 'Reset Password'
+                    : isRegistering
+                      ? 'Register on Bright'
+                      : 'Welcome to Bright'}
           </h2>
           <p>Bright Choices. Smarter Phones.</p>
         </div>
@@ -545,7 +545,7 @@ export function AuthPortal({ initialRegister = false }: { initialRegister?: bool
                 <KeyRound size={16} />
                 <input type="text" placeholder="Enter code (mock: 123456)" value={twoFactorCode} onChange={(e) => setTwoFactorCode(e.target.value)} />
               </div>
-              <button 
+              <button
                 onClick={() => {
                   if (twoFactorCode === '123456') {
                     completeLogin({
@@ -555,8 +555,8 @@ export function AuthPortal({ initialRegister = false }: { initialRegister?: bool
                   } else {
                     setErrorMsg('Invalid 2FA code. Try 123456.');
                   }
-                }} 
-                className="btn btnPrimary" 
+                }}
+                className="btn btnPrimary"
                 style={{ width: '100%', marginTop: '12px' }}
               >
                 Complete Authorization

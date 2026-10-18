@@ -37,19 +37,17 @@ export default function AdminDashboardOverview() {
   useEffect(() => {
     const fetchAdminStats = async () => {
       try {
-        const res = await fetch('/api/admin/analytics', {
-          headers: { 'Authorization': `Bearer ${auth.token}` }
-        });
+        const res = await fetch('/api/admin/analytics');
         if (res.ok) {
           const data = await res.json();
           setAnalytics(data);
         }
       } catch (_) {}
     };
-    if (auth.token) {
+    if (auth.isAuthenticated) {
       fetchAdminStats();
     }
-  }, [auth.token]);
+  }, [auth.isAuthenticated]);
 
   const lowStockItems = productsCatalog.filter((p: any) => (p.stock || 0) <= 5);
 

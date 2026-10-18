@@ -82,12 +82,9 @@ export default function CartPage() {
     if (!couponCode.trim()) return;
 
     try {
-      const headers: any = { 'Content-Type': 'application/json' };
-      if (auth.token) headers['Authorization'] = `Bearer ${auth.token}`;
-
       const res = await fetch('/api/cart/coupon', {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: couponCode.trim().toUpperCase() })
       });
 
@@ -136,7 +133,7 @@ export default function CartPage() {
     try {
       // 1. Handle Razorpay Gateway Flow
       if (paymentMethod === 'Razorpay' || paymentMethod === 'UPI') {
-        if (!auth.isAuthenticated || !auth.token) {
+        if (!auth.isAuthenticated) {
           alert('Please sign in to complete your checkout with Razorpay.');
           router.push('/login?redirect=cart');
           setSubmittingOrder(false);
@@ -155,7 +152,6 @@ export default function CartPage() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${auth.token}`
           },
           body: JSON.stringify({ amount: netAmount })
         });
@@ -191,7 +187,6 @@ export default function CartPage() {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${auth.token}`
                 },
                 body: JSON.stringify({
                   razorpay_order_id: response.razorpay_order_id,
@@ -275,12 +270,11 @@ export default function CartPage() {
 
       let receiptData: any = null;
 
-      if (auth.token) {
+      if (auth.isAuthenticated) {
         const res = await fetch('/api/cart/checkout', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${auth.token}`
           },
           body: JSON.stringify(payload)
         });
@@ -329,7 +323,6 @@ export default function CartPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth.token}`
         },
         body: JSON.stringify({
           razorpay_order_id: rzpMockData?.orderId || `order_test_${Date.now()}`,

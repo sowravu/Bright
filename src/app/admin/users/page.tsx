@@ -15,11 +15,8 @@ export default function UsersAdminPage() {
   const [userSearchQuery, setUserSearchQuery] = useState('');
 
   const fetchUsers = async () => {
-    const token = auth.token || (typeof window !== 'undefined' ? localStorage.getItem('bright_token') : '');
     try {
-      const res = await fetch('/api/admin/users', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await fetch('/api/admin/users');
       if (res.ok) {
         const data = await res.json();
         setManagedUsers(data.users || []);
@@ -29,19 +26,17 @@ export default function UsersAdminPage() {
 
   useEffect(() => {
     fetchUsers();
-  }, [auth.token]);
+  }, [auth.isAuthenticated]);
 
   const handleToggleUserBlock = async (userId: string, currentStatus: string, userName: string) => {
-    const token = auth.token || (typeof window !== 'undefined' ? localStorage.getItem('bright_token') : '');
-    if (!token) {
-      showToast('Authentication token missing. Please log in as Admin again.', 'error');
+    if (!auth.isAuthenticated) {
+      showToast('Authentication missing. Please log in as Admin again.', 'error');
       return;
     }
 
     try {
       const res = await fetch(`/api/admin/users/${userId}/block`, {
         method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
         const data = await res.json();

@@ -175,7 +175,6 @@ export default function AdminBannerPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${auth.token}`,
         },
         body: JSON.stringify(updatedData),
       });
@@ -203,9 +202,6 @@ export default function AdminBannerPage() {
     try {
       await fetch('/api/banner/reset', {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
-        },
       });
     } catch (_) {}
   };

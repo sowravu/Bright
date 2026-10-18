@@ -225,9 +225,8 @@ export default function AccessoriesAdminPage() {
       return;
     }
 
-    const token = auth.token || (typeof window !== 'undefined' ? localStorage.getItem('bright_token') : '');
-    if (!token) {
-      showToast('Authentication token missing. Please log in as Admin again.', 'error');
+    if (!auth.isAuthenticated) {
+      showToast('Authentication missing. Please log in as Admin again.', 'error');
       return;
     }
 
@@ -276,7 +275,6 @@ export default function AccessoriesAdminPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(payload)
       });
@@ -300,12 +298,9 @@ export default function AccessoriesAdminPage() {
   const confirmExecuteRemoveAccessory = async () => {
     if (!deleteConfirmTarget) return;
     const { prodId, prodName } = deleteConfirmTarget;
-    const token = auth.token || (typeof window !== 'undefined' ? localStorage.getItem('bright_token') : '');
-
     try {
       const res = await fetch(`/api/accessories/${prodId}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
       });
 
       if (res.ok) {

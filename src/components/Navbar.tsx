@@ -60,19 +60,16 @@ export default function Navbar() {
 
   // Instant session block verification on mount / page refresh
   useEffect(() => {
-    const token = auth.token || (typeof window !== 'undefined' ? localStorage.getItem('bright_token') : null);
-    if (!token) return;
+    if (!auth.isAuthenticated) return;
 
     const verifySessionStatus = async () => {
       try {
-        const res = await fetch('/api/auth/profile', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const res = await fetch('/api/auth/profile');
 
         if (res.status === 403 || res.status === 401) {
           const data = await res.json().catch(() => ({}));
           dispatch(logout());
-          showToast(data.message || 'Your account has been blocked by an administrator.', 'error');
+          showToast(data.message || 'Your session has ended.', 'error');
           if (pathname !== '/login') {
             router.push('/login');
           }
@@ -92,7 +89,7 @@ export default function Navbar() {
     };
 
     verifySessionStatus();
-  }, [auth.token, pathname, dispatch, router, showToast]);
+  }, [auth.isAuthenticated, pathname, dispatch, router, showToast]);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -150,7 +147,10 @@ export default function Navbar() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (_) {}
     dispatch(logout());
     showToast('Successfully logged out.', 'info');
   };

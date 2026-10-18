@@ -83,7 +83,6 @@ export default function BrandsAdminPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth.token}`
         },
         body: JSON.stringify({
           name: brandName,
@@ -125,7 +124,6 @@ export default function BrandsAdminPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth.token}`
         },
         body: JSON.stringify({
           name: trimmed,
@@ -159,7 +157,6 @@ export default function BrandsAdminPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth.token}`
         },
         body: JSON.stringify({
           name: editBrandName.trim(),
@@ -187,7 +184,6 @@ export default function BrandsAdminPage() {
     try {
       const res = await fetch(`/api/brands/${deleteBrandTarget.id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${auth.token}` }
       });
 
       if (res.ok) {
