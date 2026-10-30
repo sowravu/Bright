@@ -177,11 +177,20 @@ http://<YOUR_EC2_PUBLIC_IP>/api/health
    - **Build Command**: `npm run build` (auto-detected)
    - **Output Directory**: `.next` (auto-detected)
    - **Environment Variables**:
-     Add this key-value pair:
+     Add these key-value pairs:
      - `BACKEND_URL`: `http://<YOUR_EC2_PUBLIC_IP>` (e.g., `http://13.233.45.67`)
      - `NEXT_PUBLIC_BACKEND_URL`: `http://<YOUR_EC2_PUBLIC_IP>`
+     - `NEXT_PUBLIC_GOOGLE_CLIENT_ID`: `your_google_client_id` (from your Google Cloud Console)
 6. Click **Deploy**.
 7. In ~60 seconds, your site is live at a URL like `https://bright-sowravu.vercel.app`!
+
+> [!IMPORTANT]
+> **Enable Google Sign-In for your Production Vercel Domain:**
+> 1. Open [Google Cloud Console Credentials](https://console.cloud.google.com/apis/credentials).
+> 2. Click your OAuth 2.0 Client ID under **OAuth 2.0 Client IDs**.
+> 3. Under **Authorized JavaScript origins**, click **+ ADD URI** and add your production domain:
+>    `https://bright-sowravu.vercel.app` (without trailing slash).
+> 4. Click **Save**. Google Sign-In will now allow logins directly from your production website!
 
 ---
 

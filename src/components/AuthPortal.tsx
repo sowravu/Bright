@@ -332,11 +332,6 @@ export function AuthPortal({ initialRegister = false }: { initialRegister?: bool
     }
   };
 
-  // Google modal state for local dev/demo mode when NEXT_PUBLIC_GOOGLE_CLIENT_ID isn't configured in .env
-  const [showGoogleModal, setShowGoogleModal] = useState(false);
-  const [googleEmailInput, setGoogleEmailInput] = useState('sowravuusuresh@gmail.com');
-  const [googleNameInput, setGoogleNameInput] = useState('Sowrav Suresh');
-
   const triggerGoogleLogin = useGoogleLogin({
     onSuccess: async (codeResponse) => {
       try {
@@ -354,31 +349,34 @@ export function AuthPortal({ initialRegister = false }: { initialRegister?: bool
         });
       } catch {
         setErrorMsg('Failed to retrieve Google user profile.');
+        showToast('Failed to retrieve Google user profile.', 'error');
       }
     },
     onError: (errorResponse) => {
-      console.warn('Google OAuth error or fallback mode:', errorResponse);
-      setShowGoogleModal(true);
+      console.warn('Google OAuth error:', errorResponse);
+      const errStr = String(errorResponse?.error || '');
+      const errDesc = String(errorResponse?.error_description || '');
+      const isOriginMismatch =
+        errStr.includes('origin') ||
+        errStr.includes('initialization') ||
+        errDesc.includes('origin');
+      if (isOriginMismatch) {
+        showToast('Google Sign-In: Domain not authorized in Google Cloud Console.', 'error');
+        setErrorMsg('Google Sign-In: This website domain must be added to Authorized JavaScript Origins in Google Cloud Console.');
+      } else if (errStr.includes('popup_closed') || errStr.includes('user_cancel')) {
+        // User closed popup
+      } else {
+        showToast(`Google Sign-In failed: ${errStr || 'Authentication error'}`, 'error');
+      }
     },
   });
 
   const handleGoogleBtnClick = () => {
-    // Cloudflare Tunnel domains change dynamically and are not pre-authorized in Google Cloud Console.
-    // Trigger the seamless Google authentication modal fallback on tunnel domains.
-    if (typeof window !== 'undefined' && window.location.hostname.includes('trycloudflare.com')) {
-      setShowGoogleModal(true);
-      return;
-    }
-
-    const envClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    if (envClientId && !envClientId.includes('dummygoogleclientid') && envClientId.trim() !== '') {
-      try {
-        triggerGoogleLogin();
-      } catch {
-        setShowGoogleModal(true);
-      }
-    } else {
-      setShowGoogleModal(true);
+    try {
+      triggerGoogleLogin();
+    } catch (err) {
+      console.error('Trigger Google Login error:', err);
+      showToast('Could not open Google Sign-In. Please check your browser popup blocker.', 'error');
     }
   };
 
@@ -694,88 +692,6 @@ export function AuthPortal({ initialRegister = false }: { initialRegister?: bool
           </>
         )}
       </div>
-
-      {/* Google Account Selector Modal (shown when NEXT_PUBLIC_GOOGLE_CLIENT_ID is not configured in .env or for dev authentication) */}
-      {showGoogleModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0, 0, 0, 0.7)',
-          backdropFilter: 'blur(8px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999,
-          padding: '20px'
-        }}>
-          <div className={`${styles.authCard} glass`} style={{ maxWidth: '420px', background: 'var(--bg-primary, #121212)', border: '1px solid var(--border-color)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-            <div className={styles.cardHeader}>
-              <Sparkles className={styles.headerIcon} size={32} />
-              <h2>Sign in with Google</h2>
-              <p>Enter your Google account email to proceed</p>
-            </div>
-
-            <div className={styles.authForm}>
-              <div className={styles.inputField}>
-                <label>Google Email Address</label>
-                <div className={styles.inputWrap}>
-                  <Mail size={16} />
-                  <input
-                    type="email"
-                    value={googleEmailInput}
-                    onChange={(e) => setGoogleEmailInput(e.target.value)}
-                    placeholder="sowravuusuresh@gmail.com"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className={styles.inputField}>
-                <label>Account Holder Name</label>
-                <div className={styles.inputWrap}>
-                  <User size={16} />
-                  <input
-                    type="text"
-                    value={googleNameInput}
-                    onChange={(e) => setGoogleNameInput(e.target.value)}
-                    placeholder="Sowrav Suresh"
-                    required
-                  />
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  if (!googleEmailInput.trim()) return;
-                  setShowGoogleModal(false);
-                  handleGoogleSuccess({
-                    gUser: {
-                      email: googleEmailInput.trim(),
-                      name: googleNameInput.trim() || 'Google Account User',
-                      sub: `google_${Date.now()}`,
-                    },
-                  });
-                }}
-                className="btn btnPrimary"
-                style={{ width: '100%' }}
-                disabled={loading}
-              >
-                {loading ? 'Authenticating...' : `Sign in as ${googleEmailInput || 'Google User'}`}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowGoogleModal(false)}
-                className={styles.resendLink}
-                style={{ marginTop: '4px' }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

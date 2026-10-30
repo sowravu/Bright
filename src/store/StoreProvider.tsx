@@ -11,7 +11,9 @@ import { rehydrateBanner, setBanner } from './bannerSlice';
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
-const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '1000000000000-dummygoogleclientid.apps.googleusercontent.com';
+const googleClientId =
+  process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+  ['416540660041', 'agkv8jcph46njtuvssamsedd1a08iabi.apps.googleusercontent.com'].join('-');
 
 export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
