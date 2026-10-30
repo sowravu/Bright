@@ -4,8 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { useToast } from '../../../context/ToastContext';
-import { Building2, Plus, Trash2, Edit3, X, Search, CheckCircle2, Sparkles, Wand2 } from 'lucide-react';
+import { Building2, Plus, Trash2, Edit3, X, Search, CheckCircle2, Sparkles, Wand2, Loader2 } from 'lucide-react';
 import styles from '../admin.module.css';
+import { compressImageFile } from '../../../utils/imageCompressor';
 
 export default function BrandsAdminPage() {
   const auth = useSelector((state: RootState) => state.auth);
@@ -17,6 +18,7 @@ export default function BrandsAdminPage() {
   const [newBrandName, setNewBrandName] = useState('');
   const [newBrandLogo, setNewBrandLogo] = useState('');
   const [newBrandDesc, setNewBrandDesc] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [editingBrand, setEditingBrand] = useState<any | null>(null);
   const [editBrandName, setEditBrandName] = useState('');
@@ -49,17 +51,23 @@ export default function BrandsAdminPage() {
     fetchDbBrands();
   }, []);
 
-  const handleLocalFileUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
+  const handleLocalFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          callback(reader.result);
-          showToast(`Logo "${file.name}" loaded from computer!`, 'success');
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressedBase64 = await compressImageFile(file, 800, 0.85);
+        callback(compressedBase64);
+        showToast(`Logo "${file.name}" compressed and loaded!`, 'success');
+      } catch (_) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (typeof reader.result === 'string') {
+            callback(reader.result);
+            showToast(`Logo "${file.name}" loaded from computer!`, 'success');
+          }
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -116,9 +124,11 @@ export default function BrandsAdminPage() {
 
   const handleAddBrandSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     const trimmed = newBrandName.trim();
     if (!trimmed) return;
 
+    setIsSubmitting(true);
     try {
       const res = await fetch('/api/brands', {
         method: 'POST',
@@ -145,13 +155,17 @@ export default function BrandsAdminPage() {
       }
     } catch (_) {
       showToast('Error adding brand', 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleEditBrandSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!editingBrand || !editBrandName.trim()) return;
 
+    setIsSubmitting(true);
     try {
       const res = await fetch(`/api/brands/${editingBrand.id}`, {
         method: 'PUT',
@@ -175,6 +189,8 @@ export default function BrandsAdminPage() {
       }
     } catch (_) {
       showToast('Error saving brand changes', 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -422,8 +438,29 @@ export default function BrandsAdminPage() {
                 />
               </div>
 
-              <button type="submit" className="btn btnPrimary" style={{ width: '100%', marginTop: '12px', background: 'linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)' }}>
-                Add Brand to MongoDB Catalog
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="btn btnPrimary" 
+                style={{ 
+                  width: '100%', 
+                  marginTop: '12px', 
+                  background: isSubmitting ? '#c084fc' : 'linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={16} className="spinner" />
+                    Adding Brand...
+                  </>
+                ) : (
+                  'Add Brand to MongoDB Catalog'
+                )}
               </button>
             </form>
           </div>
@@ -503,8 +540,28 @@ export default function BrandsAdminPage() {
                 />
               </div>
 
-              <button type="submit" className="btn btnPrimary" style={{ width: '100%', marginTop: '12px' }}>
-                Save Brand Changes
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="btn btnPrimary" 
+                style={{ 
+                  width: '100%', 
+                  marginTop: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={16} className="spinner" />
+                    Saving Changes...
+                  </>
+                ) : (
+                  'Save Brand Changes'
+                )}
               </button>
             </form>
           </div>

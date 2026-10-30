@@ -4,8 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { useToast } from '../../../context/ToastContext';
-import { Layers, Plus, Trash2, Edit3, X, Search, CheckCircle2 } from 'lucide-react';
+import { Layers, Plus, Trash2, Edit3, X, Search, CheckCircle2, Loader2 } from 'lucide-react';
 import styles from '../admin.module.css';
+import { compressImageFile } from '../../../utils/imageCompressor';
 
 export default function AccessoryTypesAdminPage() {
   const auth = useSelector((state: RootState) => state.auth);
@@ -18,6 +19,7 @@ export default function AccessoryTypesAdminPage() {
   const [newTypeName, setNewTypeName] = useState('');
   const [newTypeIcon, setNewTypeIcon] = useState('');
   const [newTypeDesc, setNewTypeDesc] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [editingType, setEditingType] = useState<any | null>(null);
   const [editTypeName, setEditTypeName] = useState('');
@@ -49,66 +51,96 @@ export default function AccessoryTypesAdminPage() {
     fetchDbAccessoryTypes();
   }, []);
 
-  const handleLocalFileUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
+  const handleLocalFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          callback(reader.result);
-          showToast(`Icon image "${file.name}" selected from computer!`, 'success');
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressedBase64 = await compressImageFile(file, 600, 0.85);
+        callback(compressedBase64);
+        showToast(`Icon image "${file.name}" compressed and selected!`, 'success');
+      } catch (_) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (typeof reader.result === 'string') {
+            callback(reader.result);
+            showToast(`Icon image "${file.name}" selected from computer!`, 'success');
+          }
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
-  const handleAddTypeSubmit = (e: React.FormEvent) => {
+  const handleAddTypeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     const trimmed = newTypeName.trim();
     if (!trimmed) return;
 
-    fetch('/api/accessory-types', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: trimmed,
-        description: newTypeDesc,
-        icon: newTypeIcon
-      })
-    })
-      .then(() => fetchDbAccessoryTypes())
-      .catch(() => {});
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/accessory-types', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: trimmed,
+          description: newTypeDesc,
+          icon: newTypeIcon
+        })
+      });
 
-    showToast(`Accessory Type "${trimmed}" created successfully!`, 'success');
-    setNewTypeName('');
-    setNewTypeDesc('');
-    setNewTypeIcon('');
-    setShowAddModal(false);
+      if (res.ok) {
+        showToast(`Accessory Type "${trimmed}" created successfully!`, 'success');
+        await fetchDbAccessoryTypes();
+        setNewTypeName('');
+        setNewTypeDesc('');
+        setNewTypeIcon('');
+        setShowAddModal(false);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.message || 'Failed to create accessory type', 'error');
+      }
+    } catch (_) {
+      showToast('Network error creating accessory type', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleEditTypeSubmit = (e: React.FormEvent) => {
+  const handleEditTypeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!editingType || !editTypeName.trim()) return;
 
-    fetch(`/api/accessory-types/${editingType.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: editTypeName.trim(),
-        description: editTypeDesc,
-        icon: editTypeIcon
-      })
-    })
-      .then(() => fetchDbAccessoryTypes())
-      .catch(() => {});
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`/api/accessory-types/${editingType.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: editTypeName.trim(),
+          description: editTypeDesc,
+          icon: editTypeIcon
+        })
+      });
 
-    showToast(`Accessory Type "${editTypeName.trim()}" updated successfully!`, 'success');
-    setEditingType(null);
+      if (res.ok) {
+        showToast(`Accessory Type "${editTypeName.trim()}" updated successfully!`, 'success');
+        await fetchDbAccessoryTypes();
+        setEditingType(null);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.message || 'Failed to update accessory type', 'error');
+      }
+    } catch (_) {
+      showToast('Network error updating accessory type', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const confirmExecuteRemoveType = () => {
@@ -306,8 +338,29 @@ export default function AccessoryTypesAdminPage() {
                 />
               </div>
 
-              <button type="submit" className="btn btnPrimary" style={{ width: '100%', marginTop: '12px', background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)' }}>
-                Add Accessory Type to MongoDB
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="btn btnPrimary" 
+                style={{ 
+                  width: '100%', 
+                  marginTop: '12px', 
+                  background: isSubmitting ? '#93c5fd' : 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={16} className="spinner" />
+                    Adding Type...
+                  </>
+                ) : (
+                  'Add Accessory Type to MongoDB'
+                )}
               </button>
             </form>
           </div>
@@ -354,8 +407,28 @@ export default function AccessoryTypesAdminPage() {
                 />
               </div>
 
-              <button type="submit" className="btn btnPrimary" style={{ width: '100%', marginTop: '12px' }}>
-                Save Accessory Type Changes
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="btn btnPrimary" 
+                style={{ 
+                  width: '100%', 
+                  marginTop: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={16} className="spinner" />
+                    Saving Changes...
+                  </>
+                ) : (
+                  'Save Accessory Type Changes'
+                )}
               </button>
             </form>
           </div>

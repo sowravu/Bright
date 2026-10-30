@@ -5,9 +5,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../store';
 import { setProducts, removeProduct } from '../../../store/productsSlice';
 import { useToast } from '../../../context/ToastContext';
-import { Smartphone, Plus, Trash2, X, Sparkles } from 'lucide-react';
+import { Smartphone, Plus, Trash2, X, Sparkles, Loader2 } from 'lucide-react';
 import styles from '../admin.module.css';
 import Link from 'next/link';
+import { compressImageFile } from '../../../utils/imageCompressor';
 
 interface VariantStockRow {
   id: string;
@@ -78,6 +79,7 @@ export default function SmartphonesAdminPage() {
   const [deleteConfirmTarget, setDeleteConfirmTarget] = useState<{ prodId: string; prodName: string } | null>(null);
 
   const [dbProducts, setDbProducts] = useState<any[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchDbData = async () => {
     try {
@@ -151,22 +153,24 @@ export default function SmartphonesAdminPage() {
     );
   };
 
-  const handleLocalFileUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
+  const handleLocalFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          callback(reader.result);
-          showToast(`Image "${file.name}" selected from computer!`, 'success');
+      try {
+        const compressed = await compressImageFile(file);
+        if (compressed) {
+          callback(compressed);
+          showToast(`Image "${file.name}" optimized & ready!`, 'success');
         }
-      };
-      reader.readAsDataURL(file);
+      } catch (_) {
+        showToast('Error processing image file', 'error');
+      }
     }
   };
 
   const handleAddProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
     // 1. Validate Product Name
     if (!newProductName || !newProductName.trim()) {
@@ -279,6 +283,7 @@ export default function SmartphonesAdminPage() {
       images: productImages,
     };
 
+    setIsSubmitting(true);
     try {
       const res = await fetch('/api/products', {
         method: 'POST',
@@ -301,6 +306,8 @@ export default function SmartphonesAdminPage() {
       }
     } catch (_) {
       showToast('Network error when connecting to MongoDB server', 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -674,8 +681,28 @@ export default function SmartphonesAdminPage() {
                 </div>
               </div>
 
-              <button type="submit" className="btn btnPrimary" style={{ width: '100%', marginTop: '12px' }}>
-                Add Smartphone to Catalog
+              <button 
+                type="submit" 
+                className="btn btnPrimary" 
+                disabled={isSubmitting}
+                style={{ 
+                  width: '100%', 
+                  marginTop: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  opacity: isSubmitting ? 0.7 : 1,
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={16} className="spinner" /> Adding Smartphone to Catalog...
+                  </>
+                ) : (
+                  'Add Smartphone to Catalog'
+                )}
               </button>
             </form>
           </div>

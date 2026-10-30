@@ -5,9 +5,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../store';
 import { setProducts, removeProduct } from '../../../store/productsSlice';
 import { useToast } from '../../../context/ToastContext';
-import { Headphones, Plus, Trash2, X, Sparkles } from 'lucide-react';
+import { Headphones, Plus, Trash2, X, Sparkles, Loader2 } from 'lucide-react';
 import styles from '../admin.module.css';
 import Link from 'next/link';
+import { compressImageFile } from '../../../utils/imageCompressor';
 
 interface VariantStockRow {
   id: string;
@@ -76,6 +77,7 @@ export default function AccessoriesAdminPage() {
   const [deleteConfirmTarget, setDeleteConfirmTarget] = useState<{ prodId: string; prodName: string } | null>(null);
 
   const [dbAccessories, setDbAccessories] = useState<any[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchDbData = async () => {
     try {
@@ -157,22 +159,29 @@ export default function AccessoriesAdminPage() {
     );
   };
 
-  const handleLocalFileUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
+  const handleLocalFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          callback(reader.result);
-          showToast(`Image "${file.name}" selected from computer!`, 'success');
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressedBase64 = await compressImageFile(file, 1200, 0.82);
+        callback(compressedBase64);
+        showToast(`Image "${file.name}" compressed and selected!`, 'success');
+      } catch (_) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (typeof reader.result === 'string') {
+            callback(reader.result);
+            showToast(`Image "${file.name}" selected from computer!`, 'success');
+          }
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
   const handleAddAccessorySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
     // 1. Validate Accessory Name
     if (!newProductName || !newProductName.trim()) {
@@ -270,6 +279,7 @@ export default function AccessoriesAdminPage() {
       images: productImages,
     };
 
+    setIsSubmitting(true);
     try {
       const res = await fetch('/api/accessories', {
         method: 'POST',
@@ -292,6 +302,8 @@ export default function AccessoriesAdminPage() {
       }
     } catch (_) {
       showToast('Network error when connecting to MongoDB server', 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -641,8 +653,20 @@ export default function AccessoriesAdminPage() {
                 </div>
               </div>
 
-              <button type="submit" className="btn btnPrimary" style={{ width: '100%', marginTop: '12px', background: '#10b981' }}>
-                Add Accessory to Catalog
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="btn btnPrimary" 
+                style={{ width: '100%', marginTop: '12px', background: isSubmitting ? '#6ee7b7' : '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={16} className="spinner" />
+                    Adding Accessory...
+                  </>
+                ) : (
+                  'Add Accessory to Catalog'
+                )}
               </button>
             </form>
           </div>
