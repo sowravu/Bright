@@ -7,7 +7,23 @@ import { useTheme } from '../context/ThemeContext';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
 import { logout, updateUser } from '../store/authSlice';
-import { Search, ShoppingCart, User, Moon, Sun, Sparkles, ShieldCheck } from 'lucide-react';
+import { 
+  Search, 
+  ShoppingCart, 
+  User, 
+  Moon, 
+  Sun, 
+  Sparkles, 
+  ShieldCheck, 
+  Menu, 
+  X, 
+  ChevronDown, 
+  Home, 
+  Smartphone, 
+  Headphones, 
+  Tag, 
+  LogOut 
+} from 'lucide-react';
 import styles from './Navbar.module.css';
 import { useToast } from '../context/ToastContext';
 
@@ -26,6 +42,28 @@ export default function Navbar() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [brandsDropdownOpen, setBrandsDropdownOpen] = useState(false);
   const [dynamicBrands, setDynamicBrands] = useState<string[]>([]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [mobileBrandsOpen, setMobileBrandsOpen] = useState(false);
+
+  // Close mobile menus on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setMobileSearchOpen(false);
+    setMobileBrandsOpen(false);
+  }, [pathname]);
+
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const brandsDropdownRef = useRef<HTMLDivElement>(null);
@@ -143,6 +181,8 @@ export default function Navbar() {
     e.preventDefault();
     if (searchQuery.trim()) {
       setShowDropdown(false);
+      setMobileSearchOpen(false);
+      setMobileMenuOpen(false);
       window.location.href = `/products?search=${encodeURIComponent(searchQuery.trim())}`;
     }
   };
@@ -156,91 +196,208 @@ export default function Navbar() {
   };
 
   return (
-    <header className={styles.header}>
-      <div className={styles.container}>
-        {/* Brand Logo */}
-        <Link href="/" className={styles.logo}>
-          <Sparkles className={styles.sparkleIcon} size={24} />
-          <span>Bright</span>
-        </Link>
-
-        {/* Desktop Navigation Links */}
-        <nav className={styles.nav}>
-          <Link href="/" className={`${styles.navLink} ${pathname === '/' ? styles.active : ''}`}>
-            Home
-          </Link>
-          <Link href="/products" className={`${styles.navLink} ${pathname === '/products' ? styles.active : ''}`}>
-            Smartphones
+    <>
+      <header className={styles.header}>
+        <div className={styles.container}>
+          {/* Brand Logo */}
+          <Link href="/" className={styles.logo} onClick={() => setMobileMenuOpen(false)}>
+            <Sparkles className={styles.sparkleIcon} size={24} />
+            <span>Bright</span>
           </Link>
 
-          {/* Brands Dropdown */}
-          <div className={styles.dropdownContainer} ref={brandsDropdownRef}>
-            <button
-              onClick={() => setBrandsDropdownOpen(!brandsDropdownOpen)}
-              className={styles.navButton}
-            >
-              Brands <span className={styles.arrow}>{brandsDropdownOpen ? '▲' : '▼'}</span>
-            </button>
-            {brandsDropdownOpen && (
-              <div className={styles.navDropdownMenu}>
-                <Link
-                  href="/products"
-                  onClick={() => setBrandsDropdownOpen(false)}
-                  style={{ fontWeight: 700, color: 'var(--primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '4px' }}
-                >
-                  All Brands
-                </Link>
-                {dynamicBrands.length > 0 ? (
-                  dynamicBrands.map((bName) => (
+          {/* Desktop Navigation Links */}
+          <nav className={styles.nav}>
+            <Link href="/" className={`${styles.navLink} ${pathname === '/' ? styles.active : ''}`}>
+              Home
+            </Link>
+            <Link href="/products" className={`${styles.navLink} ${pathname === '/products' ? styles.active : ''}`}>
+              Smartphones
+            </Link>
+
+            {/* Brands Dropdown */}
+            <div className={styles.dropdownContainer} ref={brandsDropdownRef}>
+              <button
+                onClick={() => setBrandsDropdownOpen(!brandsDropdownOpen)}
+                className={styles.navButton}
+              >
+                Brands <span className={styles.arrow}>{brandsDropdownOpen ? '▲' : '▼'}</span>
+              </button>
+              {brandsDropdownOpen && (
+                <div className={styles.navDropdownMenu}>
+                  <Link
+                    href="/products"
+                    onClick={() => setBrandsDropdownOpen(false)}
+                    style={{ fontWeight: 700, color: 'var(--primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '4px' }}
+                  >
+                    All Brands
+                  </Link>
+                  {dynamicBrands.length > 0 ? (
+                    dynamicBrands.map((bName) => (
+                      <Link
+                        key={bName}
+                        href={`/products?brand=${encodeURIComponent(bName)}`}
+                        onClick={() => setBrandsDropdownOpen(false)}
+                      >
+                        {bName}
+                      </Link>
+                    ))
+                  ) : (
+                    <span style={{ fontSize: '12px', color: 'var(--foreground-secondary)', padding: '6px 12px' }}>
+                      No active brands available
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <Link href="/accessories" className={`${styles.navLink} ${pathname === '/accessories' ? styles.active : ''}`}>
+              Accessories
+            </Link>
+          </nav>
+
+          {/* Header Actions */}
+          <div className={styles.actions}>
+            {/* Desktop AI Search Input Container */}
+            <div className={`${styles.searchWrapper} ${styles.desktopSearch}`} ref={dropdownRef}>
+              <form onSubmit={handleSearchSubmit} className={styles.searchBar}>
+                <input
+                  type="text"
+                  placeholder="AI Smart Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <button type="submit" className={styles.searchBtn} aria-label="Search">
+                  <Search size={16} />
+                </button>
+              </form>
+
+              {/* AI Search Live Dropdown Results */}
+              {showDropdown && searchSuggestions.length > 0 && (
+                <div className={styles.dropdown}>
+                  <div className={styles.dropdownTitle}>Suggestions</div>
+                  {searchSuggestions.map((item) => (
                     <Link
-                      key={bName}
-                      href={`/products?brand=${encodeURIComponent(bName)}`}
-                      onClick={() => setBrandsDropdownOpen(false)}
+                      key={item.id || item._id}
+                      href={`/products/${item.slug || item.id || item._id}`}
+                      className={styles.dropdownItem}
+                      onClick={() => {
+                        setShowDropdown(false);
+                        setSearchQuery('');
+                      }}
                     >
-                      {bName}
+                      {item.images?.[0] && (
+                        <img src={item.images[0]} alt={item.name} />
+                      )}
+                      <div className={styles.itemMeta}>
+                        <span className={styles.itemName}>{item.name}</span>
+                        <span className={styles.itemPrice}>
+                          ₹{(item.discountPrice || item.basePrice || 0).toLocaleString('en-IN')}
+                        </span>
+                      </div>
                     </Link>
-                  ))
-                ) : (
-                  <span style={{ fontSize: '12px', color: 'var(--foreground-secondary)', padding: '6px 12px' }}>
-                    No active brands available
-                  </span>
-                )}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Search Toggle Icon */}
+            <button 
+              type="button" 
+              onClick={() => setMobileSearchOpen(!mobileSearchOpen)} 
+              className={`${styles.iconBtn} ${styles.mobileSearchBtn}`} 
+              title="Search"
+              aria-label="Toggle Search"
+            >
+              <Search size={20} />
+            </button>
+
+            {/* Cart Link */}
+            {(() => {
+              const totalCartItems = cart.items?.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0) || 0;
+              return (
+                <Link href="/cart" className={styles.iconBtn} title="Shopping Cart">
+                  <ShoppingCart size={20} />
+                  {totalCartItems > 0 && (
+                    <span className={styles.badge}>{totalCartItems}</span>
+                  )}
+                </Link>
+              );
+            })()}
+
+            {/* Desktop Theme Toggle */}
+            <button onClick={toggleTheme} className={`${styles.iconBtn} ${styles.desktopThemeBtn}`} title="Toggle Theme">
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+
+            {/* Desktop Auth State */}
+            <div className={styles.desktopAuth}>
+              {auth.isAuthenticated ? (
+                <div className={styles.userMenu}>
+                  {auth.user?.role === 'ADMIN' && (
+                    <Link href="/admin" className={styles.adminWorkspaceBtn} title="Admin Workspace Portal">
+                      <ShieldCheck size={15} />
+                      <span>Admin Workspace</span>
+                    </Link>
+                  )}
+                  <Link href="/user" className={styles.userProfileLink} title="Account Profile">
+                    <User size={18} />
+                    <span>{auth.user?.name || 'Account'}</span>
+                  </Link>
+                  <button onClick={handleLogout} className={styles.logoutBtn}>
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <Link href="/login" className={styles.loginBtn}>
+                  Sign In
+                </Link>
+              )}
+            </div>
+
+            {/* Mobile Hamburger Toggle Button */}
+            <button 
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+              className={styles.hamburgerBtn}
+              aria-label={mobileMenuOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
+              title="Navigation Menu"
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
+        </div>
 
-          <Link href="/accessories" className={`${styles.navLink} ${pathname === '/accessories' ? styles.active : ''}`}>
-            Accessories
-          </Link>
-        </nav>
-
-        {/* Header Actions */}
-        <div className={styles.actions}>
-          {/* AI Search Input Container */}
-          <div className={styles.searchWrapper} ref={dropdownRef}>
-            <form onSubmit={handleSearchSubmit} className={styles.searchBar}>
+        {/* Mobile Search Floating Dropdown */}
+        {mobileSearchOpen && (
+          <div className={styles.mobileSearchDropdown}>
+            <form onSubmit={handleSearchSubmit} className={styles.mobileSearchBar}>
+              <Search size={18} className={styles.mobileSearchIcon} />
               <input
                 type="text"
-                placeholder="AI Smart Search..."
+                autoFocus
+                placeholder="Search smartphones, brands, accessories..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button type="submit" className={styles.searchBtn} aria-label="Search">
-                <Search size={16} />
+              <button 
+                type="button" 
+                onClick={() => { setMobileSearchOpen(false); setSearchQuery(''); }}
+                className={styles.mobileSearchCloseBtn}
+              >
+                <X size={18} />
               </button>
             </form>
 
-            {/* AI Search Live Dropdown Results */}
-            {showDropdown && searchSuggestions.length > 0 && (
-              <div className={styles.dropdown}>
-                <div className={styles.dropdownTitle}>Suggestions</div>
+            {/* Mobile search suggestions */}
+            {searchSuggestions.length > 0 && (
+              <div className={styles.mobileSearchResults}>
                 {searchSuggestions.map((item) => (
                   <Link
                     key={item.id || item._id}
                     href={`/products/${item.slug || item.id || item._id}`}
                     className={styles.dropdownItem}
                     onClick={() => {
-                      setShowDropdown(false);
+                      setMobileSearchOpen(false);
                       setSearchQuery('');
                     }}
                   >
@@ -258,49 +415,214 @@ export default function Navbar() {
               </div>
             )}
           </div>
+        )}
+      </header>
 
-          {/* Cart Link */}
-          {(() => {
-            const totalCartItems = cart.items?.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0) || 0;
-            return (
-              <Link href="/cart" className={styles.iconBtn} title="Shopping Cart">
-                <ShoppingCart size={20} />
-                {totalCartItems > 0 && (
-                  <span className={styles.badge}>{totalCartItems}</span>
-                )}
-              </Link>
-            );
-          })()}
+      {/* Mobile Drawer Backdrop */}
+      {mobileMenuOpen && (
+        <div 
+          className={styles.drawerBackdrop}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
 
-          {/* Theme Toggle */}
-          <button onClick={toggleTheme} className={styles.iconBtn} title="Toggle Theme">
-            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+      {/* Mobile Navigation Drawer */}
+      <div className={`${styles.mobileDrawer} ${mobileMenuOpen ? styles.mobileDrawerOpen : ''}`}>
+        {/* Drawer Header */}
+        <div className={styles.drawerHeader}>
+          <Link href="/" className={styles.logo} onClick={() => setMobileMenuOpen(false)}>
+            <Sparkles className={styles.sparkleIcon} size={22} />
+            <span>Bright</span>
+          </Link>
+          <button 
+            type="button"
+            onClick={() => setMobileMenuOpen(false)} 
+            className={styles.drawerCloseBtn}
+            aria-label="Close menu"
+          >
+            <X size={22} />
           </button>
+        </div>
 
-          {/* Auth State Button */}
+        {/* Drawer Body Links */}
+        <div className={styles.drawerBody}>
+          <div className={styles.drawerNavLinks}>
+            <Link 
+              href="/" 
+              className={`${styles.drawerLink} ${pathname === '/' ? styles.drawerLinkActive : ''}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Home size={18} />
+              <span>Home</span>
+            </Link>
+
+            <Link 
+              href="/products" 
+              className={`${styles.drawerLink} ${pathname === '/products' ? styles.drawerLinkActive : ''}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Smartphone size={18} />
+              <span>Smartphones</span>
+            </Link>
+
+            {/* Mobile Brands Accordion */}
+            <div className={styles.drawerAccordion}>
+              <button 
+                type="button"
+                className={styles.drawerAccordionTrigger}
+                onClick={() => setMobileBrandsOpen(!mobileBrandsOpen)}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <Tag size={18} />
+                  <span>Brands</span>
+                </div>
+                <ChevronDown 
+                  size={18} 
+                  className={`${styles.drawerChevron} ${mobileBrandsOpen ? styles.drawerChevronRotated : ''}`} 
+                />
+              </button>
+
+              {mobileBrandsOpen && (
+                <div className={styles.drawerAccordionContent}>
+                  <Link 
+                    href="/products"
+                    className={styles.drawerSubLink}
+                    style={{ fontWeight: 700, color: 'var(--primary)' }}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    View All Brands
+                  </Link>
+                  {dynamicBrands.length > 0 ? (
+                    dynamicBrands.map((bName) => (
+                      <Link
+                        key={bName}
+                        href={`/products?brand=${encodeURIComponent(bName)}`}
+                        className={styles.drawerSubLink}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {bName}
+                      </Link>
+                    ))
+                  ) : (
+                    <span style={{ fontSize: '13px', color: 'var(--foreground-secondary)', padding: '6px 12px' }}>
+                      No active brands
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <Link 
+              href="/accessories" 
+              className={`${styles.drawerLink} ${pathname === '/accessories' ? styles.drawerLinkActive : ''}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Headphones size={18} />
+              <span>Accessories</span>
+            </Link>
+
+            <Link 
+              href="/cart" 
+              className={`${styles.drawerLink} ${pathname === '/cart' ? styles.drawerLinkActive : ''}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <ShoppingCart size={18} />
+              <span>My Shopping Cart</span>
+              {cart.items?.length > 0 && (
+                <span className={styles.drawerBadge}>
+                  {cart.items.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0)}
+                </span>
+              )}
+            </Link>
+          </div>
+
+          {/* Theme Switcher in Drawer */}
+          <div className={styles.drawerThemeRow}>
+            <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--foreground)' }}>Theme Mode</span>
+            <button 
+              type="button" 
+              onClick={toggleTheme} 
+              className={styles.drawerThemeToggle}
+            >
+              {theme === 'dark' ? (
+                <>
+                  <Sun size={16} /> <span>Light Mode</span>
+                </>
+              ) : (
+                <>
+                  <Moon size={16} /> <span>Dark Mode</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Drawer Footer: User Profile / Auth */}
+        <div className={styles.drawerFooter}>
           {auth.isAuthenticated ? (
-            <div className={styles.userMenu}>
+            <div className={styles.drawerUserBox}>
+              <div className={styles.drawerUserInfo}>
+                <div className={styles.drawerUserAvatar}>
+                  <User size={20} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--foreground)' }}>
+                    {auth.user?.name || 'Account Holder'}
+                  </span>
+                  <span style={{ fontSize: '12px', color: 'var(--foreground-secondary)' }}>
+                    {auth.user?.email || ''}
+                  </span>
+                </div>
+              </div>
+
               {auth.user?.role === 'ADMIN' && (
-                <Link href="/admin" className={styles.adminWorkspaceBtn} title="Admin Workspace Portal">
-                  <ShieldCheck size={15} />
-                  <span>Admin Workspace</span>
+                <Link 
+                  href="/admin" 
+                  className={styles.drawerAdminBtn}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <ShieldCheck size={16} /> Admin Workspace
                 </Link>
               )}
-              <Link href="/user" className={styles.userProfileLink} title="Account Profile">
-                <User size={18} />
-                <span>{auth.user?.name || 'Account'}</span>
+
+              <Link 
+                href="/user" 
+                className={styles.drawerProfileBtn}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <User size={16} /> Manage Account & Orders
               </Link>
-              <button onClick={handleLogout} className={styles.logoutBtn}>
-                Logout
+
+              <button 
+                type="button" 
+                onClick={() => { handleLogout(); setMobileMenuOpen(false); }} 
+                className={styles.drawerLogoutBtn}
+              >
+                <LogOut size={16} /> Logout
               </button>
             </div>
           ) : (
-            <Link href="/login" className={styles.loginBtn}>
-              Sign In
-            </Link>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <Link 
+                href="/login" 
+                className="btn btnPrimary" 
+                style={{ width: '100%', textAlign: 'center', padding: '12px', borderRadius: '12px', fontWeight: 700 }}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Sign In to Bright
+              </Link>
+              <Link 
+                href="/signup" 
+                className="btn btnSecondary" 
+                style={{ width: '100%', textAlign: 'center', padding: '12px', borderRadius: '12px', fontWeight: 600 }}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Create New Account
+              </Link>
+            </div>
           )}
         </div>
       </div>
-    </header>
+    </>
   );
 }

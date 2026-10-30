@@ -374,9 +374,451 @@
   transition: transform 0.2s ease;
 }
 
-/* Responsive */
+/* Responsive & Mobile Drawer Styles */
+.hamburgerBtn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--foreground);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.hamburgerBtn:hover {
+  background: var(--bg-secondary);
+}
+
+.mobileSearchBtn {
+  display: none;
+}
+
+.desktopSearch {
+  display: block;
+}
+
+.desktopAuth {
+  display: flex;
+  align-items: center;
+}
+
+.desktopThemeBtn {
+  display: flex;
+}
+
+/* Mobile Search Floating Dropdown */
+.mobileSearchDropdown {
+  position: fixed;
+  top: 70px;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  padding: 12px 16px;
+  z-index: 9999;
+  animation: slideDown 0.2s ease forwards;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobileSearchBar {
+  display: flex;
+  align-items: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  padding: 8px 14px;
+  gap: 10px;
+  width: 100%;
+}
+
+.mobileSearchBar input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 14px;
+  color: var(--foreground);
+  outline: none;
+}
+
+.mobileSearchIcon {
+  color: var(--foreground-secondary);
+  flex-shrink: 0;
+}
+
+.mobileSearchCloseBtn {
+  background: none;
+  border: none;
+  color: var(--foreground-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+}
+
+.mobileSearchResults {
+  margin-top: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Mobile Drawer & Backdrop */
+.drawerBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 10001;
+  animation: fadeIn 0.2s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.mobileDrawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 84%;
+  max-width: 340px;
+  height: 100vh;
+  background: var(--card-bg, #121212);
+  border-left: 1px solid var(--border-color);
+  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.5);
+  z-index: 10002;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.mobileDrawerOpen {
+  transform: translateX(0);
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.drawerCloseBtn {
+  background: none;
+  border: none;
+  color: var(--foreground);
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.drawerCloseBtn:hover {
+  background: var(--bg-secondary);
+}
+
+.drawerBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.drawerNavLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.drawerLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--foreground);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.drawerLink:hover {
+  background: var(--bg-secondary);
+  color: var(--primary);
+}
+
+.drawerLinkActive {
+  background: rgba(0, 87, 255, 0.1);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.drawerBadge {
+  margin-left: auto;
+  background: var(--primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.drawerAccordion {
+  display: flex;
+  flex-direction: column;
+}
+
+.drawerAccordionTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--foreground);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.drawerAccordionTrigger:hover {
+  background: var(--bg-secondary);
+  color: var(--primary);
+}
+
+.drawerChevron {
+  transition: transform 0.2s ease;
+  color: var(--foreground-secondary);
+}
+
+.drawerChevronRotated {
+  transform: rotate(180deg);
+}
+
+.drawerAccordionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0 8px 32px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.drawerSubLink {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--foreground-secondary);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.drawerSubLink:hover {
+  background: var(--bg-secondary);
+  color: var(--primary);
+}
+
+.drawerThemeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  margin-top: auto;
+}
+
+.drawerThemeToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--background);
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.drawerFooter {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+}
+
+.drawerUserBox {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.drawerUserInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 6px;
+}
+
+.drawerUserAvatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.drawerAdminBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 87, 255, 0.25);
+}
+
+.drawerProfileBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--background);
+  border: 1px solid var(--border-color);
+  color: var(--foreground);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  justify-content: center;
+}
+
+.drawerLogoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  justify-content: center;
+}
+
+/* Breakpoint Queries */
 @media (max-width: 992px) {
   .nav {
     display: none;
+  }
+
+  .desktopAuth {
+    display: none;
+  }
+
+  .hamburgerBtn {
+    display: flex;
+  }
+}
+
+@media (max-width: 768px) {
+  .logo {
+    margin-right: 10px;
+    font-size: 20px;
+  }
+
+  .desktopSearch {
+    display: none;
+  }
+
+  .mobileSearchBtn {
+    display: flex;
+  }
+
+  .actions {
+    gap: 6px;
+  }
+
+  .container {
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    height: 60px;
+  }
+
+  .mobileSearchDropdown {
+    top: 60px;
+  }
+
+  .desktopThemeBtn {
+    display: none;
+  }
+
+  .actions {
+    gap: 4px;
+  }
+
+  .iconBtn {
+    width: 36px;
+    height: 36px;
   }
 }
