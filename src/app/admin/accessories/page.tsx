@@ -577,52 +577,52 @@ export default function AccessoriesAdminPage() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {variantStockRows.map((row) => (
-                    <div key={row.id} style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', padding: '10px', background: 'var(--bg-primary)', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                    <div key={row.id} className={styles.variantRowCard}>
                       <div style={{ flex: '1 1 120px' }}>
-                        <span style={{ fontSize: '10px', fontWeight: 600 }}>Color Option</span>
+                        <span className={styles.variantLabel}>Color Option</span>
                         <input 
                           type="text" 
                           placeholder="e.g. Matte Black" 
                           value={row.color} 
                           onChange={(e) => handleUpdateVariantRow(row.id, 'color', e.target.value)}
-                          style={{ padding: '6px', fontSize: '12px', width: '100%' }}
+                          className={styles.variantInput}
                         />
                       </div>
                       <div style={{ flex: '0 0 90px' }}>
-                        <span style={{ fontSize: '10px', fontWeight: 600 }}>Price (₹)</span>
+                        <span className={styles.variantLabel}>Price (₹)</span>
                         <input 
                           type="number" 
                           value={row.price !== undefined ? row.price : ''} 
                           onChange={(e) => handleUpdateVariantRow(row.id, 'price', parseFloat(e.target.value) || 0)}
-                          style={{ padding: '6px', fontSize: '12px', width: '100%' }}
+                          className={styles.variantInput}
                         />
                       </div>
                       <div style={{ flex: '0 0 90px' }}>
-                        <span style={{ fontSize: '10px', fontWeight: 600 }}>Disc. Price (₹)</span>
+                        <span className={styles.variantLabel}>Disc. Price (₹)</span>
                         <input 
                           type="number" 
                           value={row.discountPrice !== undefined ? row.discountPrice : ''} 
                           onChange={(e) => handleUpdateVariantRow(row.id, 'discountPrice', parseFloat(e.target.value) || 0)}
-                          style={{ padding: '6px', fontSize: '12px', width: '100%' }}
+                          className={styles.variantInput}
                         />
                       </div>
                       <div style={{ flex: '0 0 70px' }}>
-                        <span style={{ fontSize: '10px', fontWeight: 600 }}>Stock</span>
+                        <span className={styles.variantLabel}>Stock</span>
                         <input 
                           type="number" 
                           value={row.stock} 
                           onChange={(e) => handleUpdateVariantRow(row.id, 'stock', parseInt(e.target.value) || 0)}
-                          style={{ padding: '6px', fontSize: '12px', width: '100%' }}
+                          className={styles.variantInput}
                         />
                       </div>
                       <div style={{ flex: '1 1 150px' }}>
-                        <span style={{ fontSize: '10px', fontWeight: 600 }}>Color Image</span>
+                        <span className={styles.variantLabel}>Color Image</span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <input 
                             type="file" 
                             accept="image/*" 
                             onChange={(e) => handleLocalFileUpload(e, (url) => handleUpdateVariantRow(row.id, 'image', url))}
-                            style={{ fontSize: '11px' }}
+                            style={{ fontSize: '11px', color: 'var(--foreground)' }}
                           />
                           {row.image && (
                             <img src={row.image} alt="Color Variant" style={{ width: '28px', height: '28px', objectFit: 'cover', borderRadius: '4px' }} />
