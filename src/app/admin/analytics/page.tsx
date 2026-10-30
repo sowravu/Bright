@@ -12,23 +12,18 @@ export default function AnalyticsAdminPage() {
 
   const [analytics, setAnalytics] = useState<any>({
     summary: { 
-      totalSales: 146998, 
-      totalOrders: 14, 
+      totalSales: 0, 
+      totalOrders: 0, 
+      completedOrders: 0,
+      todayOrders: 0,
       usersCount: 0, 
       productsCount: productsCatalog.length, 
-      lowStockCount: productsCatalog.filter((p: any) => p.stock <= 5).length 
-    }
+      lowStockCount: productsCatalog.filter((p: any) => p.stock <= 5).length,
+      smartphonesRevenue: 0,
+      accessoriesRevenue: 0
+    },
+    monthlySalesData: []
   });
-
-  const monthlySalesData = [
-    { month: 'Jan', smartphones: 28000, accessories: 5000, total: 33000 },
-    { month: 'Feb', smartphones: 34000, accessories: 7500, total: 41500 },
-    { month: 'Mar', smartphones: 45000, accessories: 9200, total: 54200 },
-    { month: 'Apr', smartphones: 38000, accessories: 8100, total: 46100 },
-    { month: 'May', smartphones: 52000, accessories: 11000, total: 63000 },
-    { month: 'Jun', smartphones: 68000, accessories: 14500, total: 82500 },
-    { month: 'Jul', smartphones: 119998, accessories: 27000, total: 146998 }
-  ];
 
   useEffect(() => {
     const fetchAdminStats = async () => {
@@ -45,30 +40,58 @@ export default function AnalyticsAdminPage() {
     }
   }, [auth.isAuthenticated]);
 
+  const displayMonthlyData = analytics.monthlySalesData && analytics.monthlySalesData.length > 0
+    ? analytics.monthlySalesData
+    : [
+        { month: 'Jan', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Feb', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Mar', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Apr', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'May', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Jun', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Jul', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Aug', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Sep', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Oct', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Nov', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Dec', smartphones: 0, accessories: 0, total: 0 }
+      ];
+
+  const maxSales = Math.max(...displayMonthlyData.map((d: any) => d.total || 0), 10000);
+  const totalRev = (analytics.summary?.totalSales || 0);
+  const spRev = (analytics.summary?.smartphonesRevenue || 0);
+  const accRev = (analytics.summary?.accessoriesRevenue || 0);
+  const spPct = totalRev > 0 ? ((spRev / totalRev) * 100).toFixed(1) : '0';
+  const accPct = totalRev > 0 ? ((accRev / totalRev) * 100).toFixed(1) : '0';
+
   return (
     <div className={styles.dashboardContainer}>
       <div className={styles.sectionCard}>
         <div className={styles.sectionHeader}>
           <div>
-            <h2 className={styles.sectionTitle}>Advanced Store Analytics & Revenue Reports</h2>
-            <p className={styles.sectionSubtitle}>Detailed sales metrics, revenue velocity, and catalog performance breakdown.</p>
+            <h2 className={styles.sectionTitle}>Advanced Store Analytics & Revenue Reports ({new Date().getFullYear()})</h2>
+            <p className={styles.sectionSubtitle}>Detailed live sales metrics, revenue velocity, and catalog performance breakdown from MongoDB.</p>
           </div>
         </div>
 
         {/* Sales Overview Chart Section */}
         <div className={styles.chartBars} style={{ marginTop: '24px' }}>
-          {monthlySalesData.map((d) => (
-            <div key={d.month} className={styles.chartCol}>
-              <div className={styles.barTrack}>
-                <div 
-                  className={styles.barFill} 
-                  style={{ height: `${(d.total / 150000) * 100}%` }}
-                  title={`₹${d.total.toLocaleString('en-IN')} (Smartphones: ₹${d.smartphones.toLocaleString('en-IN')}, Accessories: ₹${d.accessories.toLocaleString('en-IN')})`}
-                />
+          {displayMonthlyData.map((d: any) => {
+            const hasSales = (d.total || 0) > 0;
+            const barHeightPct = hasSales ? Math.min(Math.max((d.total / maxSales) * 100, 8), 100) : 4;
+            return (
+              <div key={d.month} className={styles.chartCol}>
+                <div className={styles.barTrack}>
+                  <div 
+                    className={styles.barFill} 
+                    style={{ height: `${barHeightPct}%`, opacity: hasSales ? 1 : 0.2 }}
+                    title={`₹${(d.total || 0).toLocaleString('en-IN')} (Smartphones: ₹${(d.smartphones || 0).toLocaleString('en-IN')}, Accessories: ₹${(d.accessories || 0).toLocaleString('en-IN')})`}
+                  />
+                </div>
+                <span className={styles.barLabel}>{d.month}</span>
               </div>
-              <span className={styles.barLabel}>{d.month}</span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -79,20 +102,20 @@ export default function AnalyticsAdminPage() {
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
                 <span>Smartphones Revenue</span>
-                <strong>₹1,19,998 (81.6%)</strong>
+                <strong>₹{spRev.toLocaleString('en-IN')} ({spPct}%)</strong>
               </div>
               <div style={{ height: '8px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: '81.6%', background: 'var(--primary)' }} />
+                <div style={{ height: '100%', width: `${spPct}%`, background: 'var(--primary)' }} />
               </div>
             </div>
 
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
                 <span>Accessories Revenue</span>
-                <strong>₹27,000 (18.4%)</strong>
+                <strong>₹{accRev.toLocaleString('en-IN')} ({accPct}%)</strong>
               </div>
               <div style={{ height: '8px', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: '18.4%', background: '#10b981' }} />
+                <div style={{ height: '100%', width: `${accPct}%`, background: '#10b981' }} />
               </div>
             </div>
           </div>

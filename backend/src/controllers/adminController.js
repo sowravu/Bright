@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Product = require('../models/Product');
 const Accessory = require('../models/Accessory');
 const Brand = require('../models/Brand');
+const Order = require('../models/Order');
 
 /**
  * @desc    Get all registered users for Admin directory
@@ -67,34 +68,119 @@ const toggleUserBlock = async (req, res, next) => {
  */
 const getAnalytics = async (req, res, next) => {
   try {
-    const [productsCount, accessoriesCount, usersCount, brandsCount, lowStockProducts] = await Promise.all([
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const [
+      productsCount,
+      accessoriesCount,
+      usersCount,
+      customersCount,
+      brandsCount,
+      lowStockProducts,
+      ordersSummary,
+      todayOrdersCount,
+      allValidOrders,
+    ] = await Promise.all([
       Product.countDocuments({}),
       Accessory.countDocuments({}),
       User.countDocuments({}),
+      User.countDocuments({ role: { $in: ['USER', 'user'] } }),
       Brand.countDocuments({}),
       Product.countDocuments({ stock: { $lte: 5 } }),
+      // Calculate real total revenue and completed orders
+      Order.aggregate([
+        {
+          $group: {
+            _id: null,
+            totalSales: {
+              $sum: {
+                $cond: [{ $ne: ['$orderStatus', 'Cancelled'] }, '$totalAmount', 0],
+              },
+            },
+            totalOrders: { $sum: 1 },
+            completedOrders: {
+              $sum: {
+                $cond: [{ $eq: ['$orderStatus', 'Delivered'] }, 1, 0],
+              },
+            },
+          },
+        },
+      ]),
+      Order.countDocuments({ createdAt: { $gte: startOfToday } }),
+      Order.find({ orderStatus: { $ne: 'Cancelled' } }).select('items totalAmount createdAt'),
     ]);
 
-    const monthlySalesData = [
-      { month: 'Jan', smartphones: 28000, accessories: 5000, total: 33000 },
-      { month: 'Feb', smartphones: 34000, accessories: 7500, total: 41500 },
-      { month: 'Mar', smartphones: 45000, accessories: 9200, total: 54200 },
-      { month: 'Apr', smartphones: 38000, accessories: 8100, total: 46100 },
-      { month: 'May', smartphones: 52000, accessories: 11000, total: 63000 },
-      { month: 'Jun', smartphones: 68000, accessories: 14500, total: 82500 },
-      { month: 'Jul', smartphones: 119998, accessories: 27000, total: 146998 },
-    ];
+    const salesStats = ordersSummary[0] || {
+      totalSales: 0,
+      totalOrders: 0,
+      completedOrders: 0,
+    };
+
+    // Calculate real monthly and category revenue from valid orders
+    const currentYear = new Date().getFullYear();
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlySalesMap = {};
+    monthNames.forEach((m) => {
+      monthlySalesMap[m] = { smartphones: 0, accessories: 0, total: 0 };
+    });
+
+    let smartphonesRevenue = 0;
+    let accessoriesRevenue = 0;
+
+    (allValidOrders || []).forEach((order) => {
+      const orderDate = new Date(order.createdAt);
+      const isCurrentYear = orderDate.getFullYear() === currentYear;
+      const monthName = monthNames[orderDate.getMonth()];
+
+      let orderSmartphones = 0;
+      let orderAccessories = 0;
+
+      (order.items || []).forEach((item) => {
+        const itemTotal = (item.price || 0) * (item.quantity || 1);
+        if (item.ram || item.storage) {
+          orderSmartphones += itemTotal;
+        } else {
+          orderAccessories += itemTotal;
+        }
+      });
+
+      if (orderSmartphones === 0 && orderAccessories === 0) {
+        orderSmartphones = order.totalAmount || 0;
+      }
+
+      smartphonesRevenue += orderSmartphones;
+      accessoriesRevenue += orderAccessories;
+
+      if (isCurrentYear && monthlySalesMap[monthName]) {
+        monthlySalesMap[monthName].smartphones += orderSmartphones;
+        monthlySalesMap[monthName].accessories += orderAccessories;
+        monthlySalesMap[monthName].total += (order.totalAmount || (orderSmartphones + orderAccessories));
+      }
+    });
+
+    const monthlySalesData = monthNames.map((month) => ({
+      month,
+      smartphones: monthlySalesMap[month].smartphones,
+      accessories: monthlySalesMap[month].accessories,
+      total: monthlySalesMap[month].total,
+    }));
 
     res.json({
       summary: {
-        totalSales: 146998,
-        totalOrders: 14,
-        usersCount,
+        totalSales: salesStats.totalSales || 0,
+        totalOrders: salesStats.totalOrders || 0,
+        completedOrders: salesStats.completedOrders || 0,
+        todayOrders: todayOrdersCount || 0,
+        usersCount: customersCount > 0 ? customersCount : usersCount,
+        allUsersCount: usersCount,
         productsCount: productsCount + accessoriesCount,
         smartphonesCount: productsCount,
         accessoriesCount,
         brandsCount,
         lowStockCount: lowStockProducts,
+        smartphonesRevenue,
+        accessoriesRevenue,
       },
       monthlySalesData,
     });

@@ -16,23 +16,16 @@ export default function AdminDashboardOverview() {
 
   const [analytics, setAnalytics] = useState<any>({
     summary: { 
-      totalSales: 146998, 
-      totalOrders: 14, 
+      totalSales: 0, 
+      totalOrders: 0, 
+      completedOrders: 0,
+      todayOrders: 0,
       usersCount: 0, 
       productsCount: productsCatalog.length, 
       lowStockCount: productsCatalog.filter((p: any) => p.stock <= 5).length 
-    }
+    },
+    monthlySalesData: []
   });
-
-  const monthlySalesData = [
-    { month: 'Jan', smartphones: 28000, accessories: 5000, total: 33000 },
-    { month: 'Feb', smartphones: 34000, accessories: 7500, total: 41500 },
-    { month: 'Mar', smartphones: 45000, accessories: 9200, total: 54200 },
-    { month: 'Apr', smartphones: 38000, accessories: 8100, total: 46100 },
-    { month: 'May', smartphones: 52000, accessories: 11000, total: 63000 },
-    { month: 'Jun', smartphones: 68000, accessories: 14500, total: 82500 },
-    { month: 'Jul', smartphones: 119998, accessories: 27000, total: 146998 }
-  ];
 
   useEffect(() => {
     const fetchAdminStats = async () => {
@@ -51,6 +44,25 @@ export default function AdminDashboardOverview() {
 
   const lowStockItems = productsCatalog.filter((p: any) => (p.stock || 0) <= 5);
 
+  const displayMonthlyData = analytics.monthlySalesData && analytics.monthlySalesData.length > 0 
+    ? analytics.monthlySalesData 
+    : [
+        { month: 'Jan', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Feb', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Mar', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Apr', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'May', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Jun', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Jul', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Aug', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Sep', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Oct', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Nov', smartphones: 0, accessories: 0, total: 0 },
+        { month: 'Dec', smartphones: 0, accessories: 0, total: 0 }
+      ];
+
+  const maxSales = Math.max(...displayMonthlyData.map((d: any) => d.total || 0), 10000);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Top Stat KPI Cards */}
@@ -59,8 +71,10 @@ export default function AdminDashboardOverview() {
           <TrendingUp className={styles.kpiIcon} />
           <div>
             <span>Total Sales Revenue</span>
-            <h2>₹{analytics.summary?.totalSales?.toLocaleString('en-IN') || '1,46,998'}</h2>
-            <div className={`${styles.kpiMeta} ${styles.kpiTrendUp}`}>+18.4% from last month</div>
+            <h2>₹{(analytics.summary?.totalSales ?? 0).toLocaleString('en-IN')}</h2>
+            <div className={`${styles.kpiMeta} ${analytics.summary?.totalSales > 0 ? styles.kpiTrendUp : ''}`}>
+              {analytics.summary?.totalSales > 0 ? 'Verified database sales' : 'No sales recorded yet'}
+            </div>
           </div>
         </div>
 
@@ -68,8 +82,10 @@ export default function AdminDashboardOverview() {
           <ShoppingBag className={styles.kpiIcon} style={{ color: '#10b981' }} />
           <div>
             <span>Total Completed Orders</span>
-            <h2>{analytics.summary?.totalOrders || 14}</h2>
-            <div className={`${styles.kpiMeta} ${styles.kpiTrendUp}`}>+4 orders today</div>
+            <h2>{analytics.summary?.completedOrders ?? 0}</h2>
+            <div className={`${styles.kpiMeta} ${styles.kpiTrendUp}`}>
+              {analytics.summary?.todayOrders ? `+${analytics.summary.todayOrders} orders today` : `${analytics.summary?.totalOrders ?? 0} total orders placed`}
+            </div>
           </div>
         </div>
 
@@ -77,7 +93,7 @@ export default function AdminDashboardOverview() {
           <Users className={styles.kpiIcon} style={{ color: '#a855f7' }} />
           <div>
             <span>Registered Customers</span>
-            <h2>{analytics.summary?.usersCount || 0}</h2>
+            <h2>{analytics.summary?.usersCount ?? 0}</h2>
             <div className={styles.kpiMeta}>Connected to MongoDB</div>
           </div>
         </div>
@@ -153,21 +169,37 @@ export default function AdminDashboardOverview() {
       {/* Sales Overview Chart Section */}
       <div className={styles.chartCard} style={{ background: 'var(--card-bg)', borderRadius: 'var(--radius-md)', padding: '24px', border: '1px solid var(--border-color)' }}>
         <div className={styles.chartHeader}>
-          <h2>Monthly Sales Performance (2026)</h2>
+          <h2>Monthly Sales Performance ({new Date().getFullYear()})</h2>
           <Link href="/admin/analytics" className="btn btnSecondary" style={{ fontSize: '12px', padding: '6px 12px', textDecoration: 'none' }}>
             <BarChart3 size={14} /> View Analytics
           </Link>
         </div>
         <div className={styles.chartBarsContainer}>
-          {monthlySalesData.map((d) => (
-            <div key={d.month} className={styles.chartBarColumn}>
-              <div className={styles.barWrapper} style={{ height: `${(d.total / 150000) * 100}%` }}>
-                <div className={styles.barSmartphone} style={{ height: '75%' }} />
-                <div className={styles.barAccessory} style={{ height: '25%' }} />
+          {displayMonthlyData.map((d: any) => {
+            const hasSales = (d.total || 0) > 0;
+            const barHeightPct = hasSales ? Math.min(Math.max((d.total / maxSales) * 100, 8), 100) : 4;
+            const smartPhonePct = hasSales ? ((d.smartphones || 0) / d.total) * 100 : 0;
+            const accessoryPct = hasSales ? ((d.accessories || 0) / d.total) * 100 : 0;
+            return (
+              <div key={d.month} className={styles.chartBarColumn}>
+                <div 
+                  className={styles.barWrapper} 
+                  style={{ height: `${barHeightPct}%` }}
+                  title={`${d.month}: ₹${(d.total || 0).toLocaleString('en-IN')}`}
+                >
+                  {hasSales ? (
+                    <>
+                      <div className={styles.barSmartphone} style={{ height: `${smartPhonePct}%` }} />
+                      <div className={styles.barAccessory} style={{ height: `${accessoryPct}%` }} />
+                    </>
+                  ) : (
+                    <div style={{ height: '100%', width: '100%', background: 'var(--border-color)', opacity: 0.25, borderRadius: '4px' }} />
+                  )}
+                </div>
+                <span className={styles.chartLabel}>{d.month}</span>
               </div>
-              <span className={styles.chartLabel}>{d.month}</span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
