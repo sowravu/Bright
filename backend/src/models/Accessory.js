@@ -67,7 +67,7 @@ const accessorySchema = new mongoose.Schema(
       color: { type: String, default: '' },
       compatibility: { type: String, default: '' },
       material: { type: String, default: '' },
-      warranty: { type: String, default: '1 Year' },
+      warranty: { type: String, default: 'Quality Tested (No Warranty)' },
     },
     isFeatured: {
       type: Boolean,

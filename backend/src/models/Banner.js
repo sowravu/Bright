@@ -11,11 +11,11 @@ const bannerSchema = new mongoose.Schema(
       type: String,
       required: true,
       default:
-        'Discover premium smartphones, wireless earbuds, fast chargers, and accessories with official brand warranty.',
+        'Discover certified refurbished smartphones, wireless earbuds, fast chargers, and accessories — 100% quality tested and verified.',
     },
     badge: {
       type: String,
-      default: 'Official Mobile & Accessories Store',
+      default: 'Certified Refurbished Smartphones & Accessories',
     },
     image: {
       type: String,

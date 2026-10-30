@@ -86,7 +86,7 @@ export default function Home() {
           _id: b._id || b.id,
           name: b.name,
           logo: b.logo || def?.logo || '',
-          description: b.description || def?.tagline || 'Official Brand Warranty & Certified Inventory',
+          description: b.description || def?.tagline || 'Certified Refurbished & Quality Tested',
         };
       })
     : defaultBrands;
@@ -97,8 +97,8 @@ export default function Home() {
 
   const bannerTitle = bannerState?.title || (heroProduct ? heroProduct.name : 'Welcome to Bright Mobile');
   const bannerDesc = bannerState?.description || (heroProduct
-    ? (heroProduct.description || `${heroProduct.brand?.name || ''} smartphone with official warranty and ultra-fast delivery.`)
-    : 'Discover premium smartphones, wireless earbuds, fast chargers, and accessories with official brand warranty.');
+    ? (heroProduct.description || `${heroProduct.brand?.name || ''} smartphone with certified quality testing and fast delivery.`)
+    : 'Discover certified refurbished smartphones, wireless earbuds, fast chargers, and accessories — 100% quality tested and verified.');
   const bannerBadge = bannerState?.badge || 'Official Mobile & Accessories Store';
   const bannerImage = bannerState?.image || heroProduct?.images?.[0];
   const ctaText = bannerState?.ctaText || 'Explore Catalog';
@@ -243,7 +243,7 @@ export default function Home() {
 
                 <h3 className={styles.brandName}>{brandName}</h3>
                 <p className={styles.brandTagline}>
-                  {b.description || b.tagline || 'Official Brand Warranty & Certified Inventory'}
+                  {b.description || b.tagline || 'Certified Refurbished & Quality Tested'}
                 </p>
 
                 <div className={styles.brandFooterRow}>

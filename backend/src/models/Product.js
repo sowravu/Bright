@@ -81,7 +81,7 @@ const productSchema = new mongoose.Schema(
       camera: { type: String, default: '' },
       battery: { type: String, default: '' },
       processor: { type: String, default: '' },
-      warranty: { type: String, default: '1 Year Brand Warranty' },
+      warranty: { type: String, default: 'Refurbished (Pre-tested, No Warranty)' },
     },
     isFeatured: {
       type: Boolean,

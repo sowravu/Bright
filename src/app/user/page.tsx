@@ -455,10 +455,10 @@ export default function UserDashboard() {
             </div>
           )}
 
-          {/* Tab 2: Orders & Warranty */}
+          {/* Tab 2: Orders & History */}
           {activeTab === 'orders' && (
             <div className={styles.tabContent}>
-              <h2>Purchased Orders & Warranty</h2>
+              <h2>Purchased Orders & History</h2>
               <p className={styles.tabSubheading}>Track your shipment, download invoices, cancel active orders, or check delivery details.</p>
 
               {orders.length === 0 ? (

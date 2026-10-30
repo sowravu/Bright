@@ -14,7 +14,7 @@ export default function AIChatBot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: 'assistant',
-      text: 'Hi there! I am your Bright AI Shopping Assistant. Looking for a new Vivo or Lava smartphone? Ask me to recommend one, explain specs, or guide you through offers!'
+      text: 'Hi there! I am your Bright Shopping Assistant. Looking for a certified refurbished smartphone? Ask me to recommend top models, compare specs, or check device details!'
     }
   ]);
   const [input, setInput] = useState('');
@@ -36,6 +36,37 @@ export default function AIChatBot() {
     setInput('');
     setLoading(true);
 
+    const lower = textToSend.toLowerCase();
+
+    // Instant accurate answers for store policies
+    if (lower.includes('warranty') || lower.includes('return') || lower.includes('replace') || lower.includes('refund')) {
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            sender: 'assistant',
+            text: 'At Bright, all smartphones are 100% pre-owned & certified refurbished. Each device passes rigorous multi-point hardware testing before dispatch. To keep prices at the best competitive rates, all sales are final — we do not offer returns, replacements, or manufacturer warranty.'
+          }
+        ]);
+        setLoading(false);
+      }, 400);
+      return;
+    }
+
+    if (lower.includes('shipping') || lower.includes('delivery') || lower.includes('tracking')) {
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            sender: 'assistant',
+            text: 'We provide express, carefully packed pan-India shipping. Orders are dispatched within 24–48 hours, and tracking details are updated in your Account > Purchases page.'
+          }
+        ]);
+        setLoading(false);
+      }, 400);
+      return;
+    }
+
     try {
       const res = await fetch('/api/products/ai-chat', {
         method: 'POST',
@@ -48,13 +79,13 @@ export default function AIChatBot() {
       } else {
         setMessages((prev) => [
           ...prev,
-          { sender: 'assistant', text: 'Sorry, I encountered an issue processing that query. Please try again.' }
+          { sender: 'assistant', text: 'You can explore our top refurbished smartphones under the Refurbished Phones tab, or connect with our support team on WhatsApp (+91 79079 24190) for instant assistance.' }
         ]);
       }
     } catch (_) {
       setMessages((prev) => [
         ...prev,
-        { sender: 'assistant', text: 'Network connection issue. Please check if the backend server is running.' }
+        { sender: 'assistant', text: 'Explore our catalog of certified refurbished smartphones, or reach our WhatsApp support (+91 79079 24190) for personalized deals!' }
       ]);
     } finally {
       setLoading(false);
@@ -67,9 +98,9 @@ export default function AIChatBot() {
 
   const suggestions = [
     'Best camera phone?',
-    'Lava phone under ₹20,000',
-    'Compare Vivo & Nothing',
-    'Warranty and Returns?'
+    'Top phones under ₹20,000',
+    'Compare iPhone & Samsung',
+    'Quality & Testing policy?'
   ];
 
   return (

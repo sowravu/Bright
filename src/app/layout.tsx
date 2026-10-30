@@ -7,9 +7,9 @@ import AIChatBot from '../components/AIChatBot';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Bright | Premium Smartphone Store',
-  description: 'Bright Choices. Smarter Phones. Browse our flagship collections of Vivo and Lava smartphones online with direct brand warranty.',
-  keywords: ['Vivo', 'Lava', 'Smartphone', 'Buy online', 'India mobile shop', 'Smart compare'],
+  title: 'Bright | Certified Refurbished Smartphones & Accessories',
+  description: 'Bright Choices. Smarter Phones. Browse certified refurbished smartphones and mobile accessories online. 100% pre-tested and verified with express pan-India delivery.',
+  keywords: ['Refurbished Smartphone', 'Second hand mobile', 'Pre-owned iPhone', 'Used Samsung Galaxy', 'Certified Refurbished', 'India mobile store', 'Smart compare'],
 };
 
 export default function RootLayout({

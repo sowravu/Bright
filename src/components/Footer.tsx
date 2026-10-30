@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Send, Smartphone, ShieldCheck, RefreshCw, Landmark } from 'lucide-react';
+import { Send, ShieldCheck, Truck, Lock, MessageSquare } from 'lucide-react';
 import styles from './Footer.module.css';
 
 export default function Footer() {
@@ -32,22 +32,22 @@ export default function Footer() {
         <div className={styles.benefitItem}>
           <ShieldCheck size={32} className={styles.benefitIcon} />
           <div>
-            <h4>100% Genuine Guarantee</h4>
-            <p>Direct brand warranty on Vivo & Lava</p>
+            <h4>100% Tested & Verified</h4>
+            <p>Multi-point hardware & quality checked</p>
           </div>
         </div>
         <div className={styles.benefitItem}>
-          <RefreshCw size={32} className={styles.benefitIcon} />
+          <Truck size={32} className={styles.benefitIcon} />
           <div>
-            <h4>7-Day Easy Returns</h4>
-            <p>Hassle-free replacement policy</p>
+            <h4>Express Pan-India Delivery</h4>
+            <p>Carefully packed & insured shipping</p>
           </div>
         </div>
         <div className={styles.benefitItem}>
-          <Landmark size={32} className={styles.benefitIcon} />
+          <Lock size={32} className={styles.benefitIcon} />
           <div>
-            <h4>Flexible Finance Options</h4>
-            <p>No-cost EMIs up to 12 months</p>
+            <h4>100% Secure Payments</h4>
+            <p>Safe checkout via UPI & Razorpay</p>
           </div>
         </div>
       </div>
@@ -60,35 +60,54 @@ export default function Footer() {
           </Link>
           <p className={styles.tagline}>"Bright Choices. Smarter Phones."</p>
           <p className={styles.desc}>
-            Bright is India's premium e-commerce experience offering direct authorization smartphones from Vivo and Lava. Designed to feel luxurious, buy smart.
+            Bright is your premier destination for certified refurbished smartphones and mobile accessories. Every device is thoroughly inspected, tested, and delivered across India.
           </p>
-          <div className={styles.appBadges}>
-            <div className={styles.appBadge}>Google Play</div>
-            <div className={styles.appBadge}>App Store</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
+            <a 
+              href="https://wa.me/917907924190?text=Hi%20Bright%2C%20I%20have%20an%20inquiry%20about%20a%20smartphone"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: '#25D366',
+                color: '#FFFFFF',
+                padding: '8px 16px',
+                borderRadius: 'var(--radius-full)',
+                fontSize: '12px',
+                fontWeight: 700,
+                textDecoration: 'none',
+                boxShadow: '0 2px 8px rgba(37, 211, 102, 0.25)'
+              }}
+            >
+              <MessageSquare size={14} /> WhatsApp Support
+            </a>
           </div>
         </div>
 
         {/* Links Column 1 */}
         <div className={styles.linksCol}>
-          <h3>Primary Brands</h3>
+          <h3>Top Brands</h3>
           <ul>
-            <li><Link href="/products?brand=Vivo">Vivo Flagships</Link></li>
-            <li><Link href="/products?brand=Vivo">Vivo V-Series</Link></li>
-            <li><Link href="/products?brand=Lava">Lava Agni Series</Link></li>
-            <li><Link href="/products?brand=Lava">Lava Yuva Series</Link></li>
-            <li><Link href="/products?brand=Lava">Lava Blaze Series</Link></li>
+            <li><Link href="/products?brand=Apple">Apple iPhone</Link></li>
+            <li><Link href="/products?brand=Samsung">Samsung Galaxy</Link></li>
+            <li><Link href="/products?brand=OnePlus">OnePlus</Link></li>
+            <li><Link href="/products?brand=Xiaomi">Xiaomi / Redmi</Link></li>
+            <li><Link href="/products?brand=Vivo">Vivo</Link></li>
+            <li><Link href="/products">All Smartphones →</Link></li>
           </ul>
         </div>
 
         {/* Links Column 2 */}
         <div className={styles.linksCol}>
-          <h3>Offers & Catalog</h3>
+          <h3>Catalog & Quick Links</h3>
           <ul>
-            <li><Link href="/products">All Smartphones</Link></li>
-            <li><Link href="/offers">Student Discounts</Link></li>
-            <li><Link href="/offers">EMI Calculator</Link></li>
-            <li><Link href="/offers">Exchange Offers</Link></li>
-            <li><Link href="/products">New Arrivals</Link></li>
+            <li><Link href="/products">Refurbished Phones</Link></li>
+            <li><Link href="/accessories">Mobile Accessories</Link></li>
+            <li><Link href="/compare">Compare Devices</Link></li>
+            <li><Link href="/cart">Shopping Cart</Link></li>
+            <li><Link href="/user">My Account & Orders</Link></li>
           </ul>
         </div>
 
@@ -116,10 +135,10 @@ export default function Footer() {
         <div className={`${styles.bottomContainer} container`}>
           <p>© {new Date().getFullYear()} Bright E-Commerce. All rights reserved.</p>
           <div className={styles.paymentsStrip}>
-            <span>Stripe Secured</span>
-            <span>Razorpay Enabled</span>
-            <span>UPI Auto</span>
-            <span>Private Courier Delivery</span>
+            <span>Razorpay Secured</span>
+            <span>UPI & NetBanking</span>
+            <span>Quality Tested</span>
+            <span>Express Delivery</span>
           </div>
         </div>
       </div>

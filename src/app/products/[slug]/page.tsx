@@ -51,7 +51,9 @@ function getParsedSpecs(p: any) {
   let frontCamera = isVal(existing.frontCamera) ? existing.frontCamera : isVal(existing.frontCameraSetup) ? existing.frontCameraSetup : null;
   let operatingSystem = isVal(existing.operatingSystem) ? existing.operatingSystem : isVal(existing.os) ? existing.os : null;
   let refreshRate = isVal(existing.refreshRate) ? existing.refreshRate : null;
-  let warranty = isVal(existing.warranty) ? existing.warranty : '1 Year Manufacturer Warranty';
+  let warranty = (isVal(existing.warranty) && !existing.warranty.toLowerCase().includes('year') && !existing.warranty.toLowerCase().includes('brand') && !existing.warranty.toLowerCase().includes('replacement'))
+    ? existing.warranty 
+    : 'Refurbished (Pre-tested, No Warranty)';
   let network = isVal(existing.network) ? existing.network : (p.is5G !== false ? '5G Dual SIM' : '4G VoLTE');
   let simType = isVal(existing.simType) ? existing.simType : 'Dual Nano SIM';
 
@@ -918,7 +920,7 @@ export default function ProductDetails() {
                   </div>
                   <div className={styles.specItem}>
                     <span className={styles.specLabel}>Warranty</span>
-                    <span className={styles.specValue}>{spec.warranty || '1 Year Manufacturer Warranty'}</span>
+                    <span className={styles.specValue}>{spec.warranty && !spec.warranty.toLowerCase().includes('year') ? spec.warranty : 'Quality Tested (No Warranty)'}</span>
                   </div>
                 </div>
               </div>

@@ -34,7 +34,7 @@ export default function SmartphonesAdminPage() {
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [newProductName, setNewProductName] = useState('');
   const [newProductBrand, setNewProductBrand] = useState('');
-  const [newProductWarranty, setNewProductWarranty] = useState('1 Year Warranty');
+  const [newProductWarranty, setNewProductWarranty] = useState('Refurbished (Pre-tested, No Warranty)');
   const [newProductDescription, setNewProductDescription] = useState('');
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
@@ -535,7 +535,7 @@ export default function SmartphonesAdminPage() {
                 <label>Warranty Policy</label>
                 <input 
                   type="text" 
-                  placeholder="e.g. 1 Year Brand Warranty" 
+                  placeholder="e.g. Refurbished (Pre-tested, No Warranty)" 
                   value={newProductWarranty} 
                   onChange={(e) => setNewProductWarranty(e.target.value)} 
                 />

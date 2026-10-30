@@ -23,8 +23,8 @@ interface BannerState extends BannerData {
 const defaultBanner: BannerData = {
   title: 'Welcome to Bright Mobile',
   description:
-    'Discover premium smartphones, wireless earbuds, fast chargers, and accessories with official brand warranty.',
-  badge: 'Official Mobile & Accessories Store',
+    'Discover certified refurbished smartphones, premium earbuds, fast chargers, and accessories — 100% quality tested and verified.',
+  badge: 'Certified Refurbished Smartphones & Accessories',
   image: '',
   ctaText: 'Explore Catalog',
   ctaLink: '/products',

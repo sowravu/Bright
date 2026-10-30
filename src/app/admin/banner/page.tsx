@@ -15,7 +15,7 @@ const presetTemplates = [
     name: 'Onam Grand Sale 🌼',
     badge: '🌼 Onam Grand Festive Offer',
     title: 'Grand Onam Tech Celebration',
-    description: 'Celebrate Onam with golden discounts on top 5G smartphones, earbuds & accessories! Get up to 40% OFF with official brand warranty.',
+    description: 'Celebrate Onam with golden discounts on certified refurbished 5G smartphones, earbuds & accessories! 100% tested and verified.',
     ctaText: 'Claim Onam Offers',
     buttonColor: '#d97706',
     buttonTextColor: '#ffffff',
@@ -49,9 +49,9 @@ const presetTemplates = [
   {
     id: 'default',
     name: 'Classic Store Banner 📱',
-    badge: 'Official Mobile & Accessories Store',
+    badge: 'Certified Refurbished Smartphones & Accessories',
     title: 'Welcome to Bright Mobile',
-    description: 'Discover premium smartphones, wireless earbuds, fast chargers, and accessories with official brand warranty.',
+    description: 'Discover certified refurbished smartphones, wireless earbuds, fast chargers, and accessories — 100% quality tested and verified.',
     ctaText: 'Explore Catalog',
     buttonColor: '#2563eb',
     buttonTextColor: '#ffffff',
@@ -94,9 +94,9 @@ export default function AdminBannerPage() {
     setTitle(bannerState.title || 'Welcome to Bright Mobile');
     setDescription(
       bannerState.description ||
-        'Discover premium smartphones, wireless earbuds, fast chargers, and accessories with official brand warranty.'
+        'Discover certified refurbished smartphones, wireless earbuds, fast chargers, and accessories — 100% quality tested and verified.'
     );
-    setBadge(bannerState.badge || 'Official Mobile & Accessories Store');
+    setBadge(bannerState.badge || 'Certified Refurbished Smartphones & Accessories');
     setImage(bannerState.image || '');
     setCtaText(bannerState.ctaText || 'Explore Catalog');
     setCtaLink(bannerState.ctaLink || '/products');
@@ -314,7 +314,7 @@ export default function AdminBannerPage() {
             )}
             <h1>{title || 'Welcome to Bright Mobile'}</h1>
             <p className={homeStyles.heroSub}>
-              {description || 'Discover premium smartphones, wireless earbuds, fast chargers, and accessories with official brand warranty.'}
+              {description || 'Discover certified refurbished smartphones, wireless earbuds, fast chargers, and accessories — 100% quality tested and verified.'}
             </p>
             <div className={homeStyles.heroCTAs}>
               <button

@@ -196,7 +196,7 @@ function generateSmartphoneSpecs(name, brand) {
   let operatingSystem = 'Android 14';
   let refreshRate = '120Hz';
   let network = '5G Dual SIM';
-  let warranty = '1 Year Manufacturer Warranty';
+  let warranty = 'Refurbished (Pre-tested, No Warranty)';
 
   if (lower.includes('iqoo') || lower.includes('neo')) {
     processor = 'Qualcomm Snapdragon 8s Gen 3 (4nm)';
